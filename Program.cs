@@ -53,6 +53,7 @@ namespace Kimi
             await pCommands.InitializeAsync();
 
             pCommands.AddModule<PrefixModule>();
+            pCommands.AddModule<Modules.Monark.Monark>();
 
             _client.Log += async (LogMessage msg) => { Console.WriteLine(msg.Message); };
             sCommands.Log += async (LogMessage msg) => { Console.WriteLine(msg.Message); };
