@@ -21,10 +21,13 @@ namespace Kimi.Modules.Monark
                 embed: await MonarkSerialization.EmbedBuildAsync(tweet));
         }
 
-        [Command("teste2")]
-        public async Task Teste2()
+        [Command("force")]
+        public async Task Teste2([Remainder] string tweet)
         {
-            await Context.Message.ReplyAsync("teste2");
+            Random rng = new Random();
+            await Context.Message.ReplyAsync(text: $"<https://twitter.com/monark/status/" +
+                $"{MonarkSerialization.TweetData[rng.Next(0, MonarkSerialization.TweetData.Count)].id}>",
+                embed: await MonarkSerialization.EmbedBuildAsync(tweet));
         }
 
         [Command("deserialize")]

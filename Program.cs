@@ -64,6 +64,7 @@ namespace Kimi
                 await _client.SetGameAsync("joserobjr", null, ActivityType.Watching);
                 await _client.SetStatusAsync(UserStatus.Idle);
                 await sCommands.RegisterCommandsGloballyAsync();
+                Console.WriteLine(await Modules.Monark.MonarkSerialization.DeserializationAsync());
             };
 
             await _client.LoginAsync(TokenType.Bot, config["Token"]);

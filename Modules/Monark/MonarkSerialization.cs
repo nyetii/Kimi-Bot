@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Kimi.Modules.Monark
@@ -71,10 +72,11 @@ namespace Kimi.Modules.Monark
 
                 int n = rng.Next(0, TweetData.Count);
 
-                p1 = TweetData[n-1].text.ToString().Split(',', '.');
+                // p1 = TweetData[n].text.ToString().Split(',', '.');
+                p1 = Regex.Replace(TweetData[n].text, @"http[^\s]+", "").Split(',', '.');
                 n = rng.Next(TweetData.Count);
-                p2 = TweetData[n-1].text.ToString().Split(',', '.');
-                return await Task.FromResult($"{p1[0]} {p2[0]}");
+                p2 = Regex.Replace(TweetData[n].text, @"http[^\s]+", "").Split(',', '.');
+                return await Task.FromResult($"{p1[rng.Next(0, p1.Length)].TrimEnd(' ')} {p2[rng.Next(0, p2.Length)].TrimEnd(' ')}");
 
             }
             catch(Exception ex)
