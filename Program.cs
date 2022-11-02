@@ -54,6 +54,8 @@ namespace Kimi
 
             pCommands.AddModule<PrefixModule>();
             pCommands.AddModule<Modules.Monark.Monark>();
+            pCommands.AddModule<State>();
+            pCommands.AddModule<Modules.Info.Help>();
 
             _client.Log += async (LogMessage msg) => { Console.WriteLine(msg.Message); };
             sCommands.Log += async (LogMessage msg) => { Console.WriteLine(msg.Message); };

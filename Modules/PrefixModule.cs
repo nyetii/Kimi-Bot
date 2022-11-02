@@ -11,12 +11,14 @@ namespace Kimi.Modules
     public class PrefixModule : ModuleBase<SocketCommandContext>
     {
         [Command("joserobjr")]
+        [Summary("Primeiro comando feito para o bot")]
         public async Task HandlePingCommand()
         {
             await Context.Message.ReplyAsync("https://media.discordapp.net/attachments/896243750228090974/952247379732619326/lobber.gif");
         }
 
         [Command("fresno")]
+        [Summary("Letra da música \"6h34 (NEM LIGA GURIA)\" de Fresno")]
         public async Task HandleFresnoCommand()
         {
             string fresno = "Nem liga, guria\nSe eu já nem sei disfarçar\nSe eu já cansei de esconder\nO que era fácil de achar" +

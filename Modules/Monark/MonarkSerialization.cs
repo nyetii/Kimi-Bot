@@ -15,6 +15,7 @@ namespace Kimi.Modules.Monark
     {
         public static List<Datum> TweetData = new List<Datum>();
         static Root monark;
+
         public static async Task<string> DeserializationAsync()
         {
             try
@@ -85,13 +86,15 @@ namespace Kimi.Modules.Monark
             }
         }
 
-        public static async Task<Embed> EmbedBuildAsync(string tweet)
+        public static async Task<Embed> EmbedBuildAsync(MonarkArgs args)
         {
+            var user = args.Username != null ? args.Username : null;
+            if (args.Username != null) { user = Regex.Replace(args.Username, @"\s+", ""); }
             Random rng = new Random();
 
             var author = new EmbedAuthorBuilder()
-                .WithIconUrl("https://pbs.twimg.com/profile_images/1414588664169041920/zOl8EzRT_400x400.jpg")
-                .WithName("♔ Monark (@monark)");
+                .WithIconUrl(args.Avatar != null ? $"{args.Avatar}" : "https://pbs.twimg.com/profile_images/1414588664169041920/zOl8EzRT_400x400.jpg")
+                .WithName(args.Username != null ? $"{args.Username} (@{user.ToLowerInvariant()})" : "♔ Monark (@monark)");
             var footer = new EmbedFooterBuilder()
                 .WithIconUrl("https://abs.twimg.com/icons/apple-touch-icon-192x192.png")
                 .WithText("Twitter");
@@ -107,7 +110,8 @@ namespace Kimi.Modules.Monark
             var embed = new EmbedBuilder()
                 .WithAuthor(author)
                 .WithFooter(footer)
-                .WithDescription(tweet)
+                .WithDescription(args.Tweet)
+                .WithImageUrl(args.Image != null ? $"{args.Image}" : "")
                 .AddField(likes)
                 .AddField(retweets)
                 .WithColor(29, 160, 242)
