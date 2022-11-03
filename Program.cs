@@ -6,7 +6,11 @@ using Kimi.Modules;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json.Linq;
+using Serilog;
+using Serilog.Events;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Kimi
@@ -17,6 +21,12 @@ namespace Kimi
 
         public async Task MainAsync()
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
+
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appconfig.json")
@@ -52,12 +62,9 @@ namespace Kimi
             var pCommands = provider.GetRequiredService<PrefixHandler>();
             await pCommands.InitializeAsync();
 
-            pCommands.AddModule<PrefixModule>();
-            pCommands.AddModule<Modules.Monark.Monark>();
-            pCommands.AddModule<State>();
-            pCommands.AddModule<Modules.Info.Help>();
+            await ModuleAdding.AddModule(host);
 
-            _client.Log += async (LogMessage msg) => { Console.WriteLine(msg.Message); };
+            _client.Log += LogAsync;
             sCommands.Log += async (LogMessage msg) => { Console.WriteLine(msg.Message); };
 
             _client.Ready += async () =>
@@ -73,6 +80,40 @@ namespace Kimi
             await _client.StartAsync();
 
             await Task.Delay(-1);
+        }
+
+        private static async Task LogAsync(LogMessage message)
+        {
+            var severity = message.Severity switch
+            {
+                LogSeverity.Critical => LogEventLevel.Fatal,
+                LogSeverity.Error => LogEventLevel.Error,
+                LogSeverity.Warning => LogEventLevel.Warning,
+                LogSeverity.Info => LogEventLevel.Information,
+                LogSeverity.Verbose => LogEventLevel.Verbose,
+                LogSeverity.Debug => LogEventLevel.Debug,
+                _ => LogEventLevel.Information
+            };
+            Log.Write(severity, message.Exception, "[{Source}] {Message}", message.Source, message.Message);
+            await Task.CompletedTask;
+        }
+    }
+
+    class ModuleAdding : Program
+    {
+        public static async Task AddModule(IHost host)
+        {
+            using IServiceScope serviceScope = host.Services.CreateScope();
+            IServiceProvider provider = serviceScope.ServiceProvider;
+            var pCommands = provider.GetRequiredService<PrefixHandler>();
+
+            // Add modules here
+            pCommands.AddModule<PrefixModule>();
+            pCommands.AddModule<Modules.Monark.Monark>();
+            pCommands.AddModule<State>();
+            pCommands.AddModule<Modules.Info.Help>();
+
+            await Task.CompletedTask;
         }
     }
 }

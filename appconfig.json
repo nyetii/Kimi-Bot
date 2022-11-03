@@ -1,5 +1,11 @@
 {
   "Token": "OTg4Mjg1ODcwMTQ0NjMwODM0.GYwUuv.muIUfKqQkGW_0xRlAh4LAm3HLm61gZMpwqqioQ",
   "Prefix": "!",
-  "AdminID": 191604848423075840
+  "AdminID": 191604848423075840,
+  "Module": [
+    "PrefixModule",
+    "Modules.Monark.Monark",
+    "State",
+    "Modules.Info.Help"
+  ]
 }
