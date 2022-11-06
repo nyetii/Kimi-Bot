@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Kimi.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -30,7 +31,8 @@ namespace Kimi.Modules.Info
         //}
 
         [Command(null)]
-        public async Task SpecificHelpAsync(params string[] command)
+        [Summary("Lorem Ipsum Dolor sit")]
+        public async Task SpecificHelpAsync([Summary("Specific command you want to learn")] params string[] command)
         {
             try
             {
@@ -44,7 +46,12 @@ namespace Kimi.Modules.Info
                 {
                     await ReplyAsync(embed: await HelpEmbedBuildAsync());
                 }
-            } catch(Exception ex) { await ReplyAsync(ex.ToString()); }
+            }
+            catch (Exception ex)
+            {
+                await Logging.ExceptionAsync(ex, Context.Message.CleanContent, Context.User);
+                await ReplyAsync(message: "<@191604848423075840> did you remember to update your `description.json` file?", embed: await Errors.ExceptionAsync(ex.ToString()));
+            }
         }
 
         public async Task<Embed> HelpEmbedBuildAsync()
@@ -84,10 +91,16 @@ namespace Kimi.Modules.Info
 
         public async Task<Embed> SpecificHelpEmbedBuildAsync(string[] cmd)
         {
+            Misc misc = new();
             var embed = new EmbedBuilder();
             string alias = null;
             string description = null;
             bool foundCommand = false;
+
+
+
+
+
             foreach (var command in _commands.Commands)
             {
                 for (int i = 0; i < cmd.Length && !foundCommand; i++)
@@ -101,9 +114,10 @@ namespace Kimi.Modules.Info
                         try
                         {
                             var result = await command.CheckPreconditionsAsync(Context);
-                            if (result.IsSuccess && command.HasVarArgs)
+                            if (result.IsSuccess && command.HasVarArgs || command.Parameters.Count > 0)
                             {
-                                name += $"{command.Parameters.FirstOrDefault().Name}\n";
+                                name += $"`{command.Parameters.FirstOrDefault().Name}`\n";
+                                description += command.Summary != null ? $"{command.Summary}\n" : $"Sem palavras.\n";
                                 fieldValue += $"{command.Parameters.FirstOrDefault().Summary}\n";
                             }
                             else if (result.IsSuccess)
@@ -113,6 +127,28 @@ namespace Kimi.Modules.Info
 
                             if (!string.IsNullOrWhiteSpace(fieldValue))
                             {
+                                string[] whitespaces = await misc.WhitespacesFromRatioAsync(command.Summary.Length);
+                                embed
+                                    .AddField(x =>
+                                    {
+
+                                        x.Name = $"_{whitespaces[1]}_";
+                                        x.Value = $"_ _";
+                                        x.IsInline = true;
+                                    })
+                                    .AddField(x =>
+                                    {
+                                        x.Name = "PARAMETERS";
+                                        x.Value = "_ _";
+                                        x.IsInline = true;
+                                    })
+                                    .AddField(x =>
+                                    {
+                                        x.Name = $"_{whitespaces[0]}_";
+                                        x.Value = $"_ _";
+                                        x.IsInline = true;
+                                    });
+
                                 embed.AddField(x =>
                                 {
                                     x.Name = name;
@@ -146,7 +182,47 @@ namespace Kimi.Modules.Info
                         var summary = JObject.Parse(jsonString);
                         foundCommand = true;
                         alias = $"Help - !{cmd[0]}";
-                        description = summary[cmd[0]].ToString();
+                        description = summary[cmd[0]] != null ? summary[cmd[0]].ToString() : $"Sem palavras.\n";
+                        string fieldValue = null;
+                        string name = null;
+
+                        var result = await command.CheckPreconditionsAsync(Context);
+                        if (result.IsSuccess && command.HasVarArgs)
+                        {
+                            name += $"`{command.Parameters.FirstOrDefault().Name}`\n";
+                            fieldValue += $"{command.Parameters.FirstOrDefault().Summary}\n";
+                        }
+                        if (!string.IsNullOrWhiteSpace(fieldValue))
+                        {
+                            string[] whitespaces = await misc.WhitespacesFromRatioAsync(command.Summary.Length);
+                            embed
+                                .AddField(x =>
+                                {
+
+                                    x.Name = $"_{whitespaces[1]}_";
+                                    x.Value = $"_ _";
+                                    x.IsInline = true;
+                                })
+                                .AddField(x =>
+                                {
+                                    x.Name = "PARAMETERS";
+                                    x.Value = "_ _";
+                                    x.IsInline = true;
+                                })
+                                .AddField(x =>
+                                {
+                                    x.Name = $"_{whitespaces[0]}_";
+                                    x.Value = $"_ _";
+                                    x.IsInline = true;
+                                });
+
+                            embed.AddField(x =>
+                            {
+                                x.Name = name;
+                                x.Value = fieldValue;
+                                x.IsInline = true;
+                            });
+                        }
                     }
                 }
             }

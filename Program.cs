@@ -65,7 +65,7 @@ namespace Kimi
             await ModuleAdding.AddModule(host);
 
             _client.Log += LogAsync;
-            sCommands.Log += async (LogMessage msg) => { Console.WriteLine(msg.Message); };
+            sCommands.Log += LogAsync;
 
             _client.Ready += async () =>
             {

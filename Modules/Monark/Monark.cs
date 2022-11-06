@@ -10,22 +10,28 @@ using System.Threading.Tasks;
 namespace Kimi.Modules.Monark
 {
     [Group("monark")]
-    
+
     class Monark : ModuleBase<SocketCommandContext>
     {
-        
+
 
         [Command("force")]
         [Summary("Atributo para forçar um template personalizado. " +
-            "Template padrão: @monark\n\n**Sintaxe:**\n`!monark force tweet: \"tweet\" image: (link) avatar: (link) username: \"username \"`")]
-        public async Task Teste2([Remainder] [Summary("`tweet`\n`image`\n`avatar`\n`username`")] MonarkArgs args)
+            "Template padrão: @monark\n\n**Sintaxe:**\n`!monark force tweet: \"tweet\" image: <link> avatar: <link> username: \"username\"`")]
+        public async Task Teste2([Summary("Lembre-se que os campos `tweet` e `username` precisam ser preenchidos com aspas - Ex.: \"Flow Podcast\"\n\n" +
+            "`tweet`    - Conteúdo do tweet em questão\n" +
+            "`image`    - URL de uma imagem\n" +
+            "`avatar`   - URL de um avatar\n" +
+            "`username` - Nome de usuário (espaços serão cortados para o @)")]
+        [Remainder] MonarkArgs content)
         {
-            var link = args.Username != null ? args.Username : "monark";
-            if (args.Username != null) { link = Regex.Replace(args.Username, @"\s+", ""); }
+            var link = content.Username != null ? content.Username : "monark";
+            if (content.Username != null) { link = Regex.Replace(content.Username, @"\s+", ""); }
             Random rng = new Random();
             await Context.Message.ReplyAsync(text: $"<https://twitter.com/{link.ToLowerInvariant()}/status/" +
                 $"{MonarkSerialization.TweetData[rng.Next(0, MonarkSerialization.TweetData.Count)].id}>",
-                embed: await MonarkSerialization.EmbedBuildAsync(args));
+                embed: await MonarkSerialization.EmbedBuildAsync(content));
+
         }
 
         [Command("deserialize")]

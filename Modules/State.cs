@@ -48,7 +48,8 @@ namespace Kimi.Modules
         }
 
         [Command("restart")]
-        public async Task RestartAsync(params string[] console)
+        [Summary("Restarts the bot.")]
+        public async Task RestartAsync([Summary("Restarts bot with the console.")]params string[] console)
         {
             var content = Context.Message.CleanContent;
             IUser user = Context.Message.Author;
