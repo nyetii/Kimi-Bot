@@ -28,6 +28,12 @@ namespace Kimi
             Log.Error("Exception caught... - Command <{command}> called by {user}#{tag}\n{ex}", command, user.Username, user.Discriminator, ex);
             await Task.CompletedTask;
         }
+
+        public static async Task ExceptionCodeAsync(Exception ex)
+        {
+            Log.Error("Exception caught... - {ex}", ex);
+            await Task.CompletedTask;
+        }
     }
 
     class Errors

@@ -70,13 +70,22 @@ namespace Kimi
             _client.Ready += async () =>
             {
                 Console.WriteLine("Ready!");
-                await _client.SetGameAsync("joserobjr", null, ActivityType.Watching);
+                await _client.SetGameAsync("poly", null, ActivityType.Watching);
                 await _client.SetStatusAsync(UserStatus.Idle);
                 await sCommands.RegisterCommandsGloballyAsync();
                 Console.WriteLine(await Modules.Monark.MonarkSerialization.DeserializationAsync());
+
+                Log.Information("Logged in as <{0}#{1}>!", _client.CurrentUser.Username, _client.CurrentUser.Discriminator);
             };
 
+            #if !DEBUG
             await _client.LoginAsync(TokenType.Bot, config["Token"]);
+            #else
+            await _client.LoginAsync(TokenType.Bot, config["DebugToken"]);
+            Log.Information("Running on the BETA account!");
+            #endif
+
+
             await _client.StartAsync();
 
             await Task.Delay(-1);

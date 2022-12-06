@@ -10,7 +10,7 @@ namespace Kimi.Modules
 {
     public class PrefixModule : ModuleBase<SocketCommandContext>
     {
-        [Command("joserobjr")]
+        [Command("polyana")]
         [Summary("Primeiro comando feito para o bot")]
         public async Task HandlePingCommand()
         {
