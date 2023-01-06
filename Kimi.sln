@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32901.82
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kimi", "Kimi.csproj", "{AD894598-6740-4832-8510-04316DEF1E9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kimi.Core", "src\Kimi.Core\Kimi.Core.csproj", "{D986CEE5-675D-41EE-B083-39318E320D83}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AD894598-6740-4832-8510-04316DEF1E9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AD894598-6740-4832-8510-04316DEF1E9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AD894598-6740-4832-8510-04316DEF1E9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AD894598-6740-4832-8510-04316DEF1E9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D986CEE5-675D-41EE-B083-39318E320D83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D986CEE5-675D-41EE-B083-39318E320D83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D986CEE5-675D-41EE-B083-39318E320D83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D986CEE5-675D-41EE-B083-39318E320D83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {5990614F-FBC1-48F8-88FB-3EB34D5CD577}
+		SolutionGuid = {51FA50BB-1610-47DE-97A6-4F6939E06AF8}
 	EndGlobalSection
 EndGlobal
