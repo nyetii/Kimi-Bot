@@ -2,10 +2,13 @@
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Kimi.Core.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using Serilog;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Kimi.Core
@@ -16,6 +19,8 @@ namespace Kimi.Core
 
         public async Task MainAsync()
         {
+            Debug.Assert(Info.IsDebug = true);
+
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .Enrich.FromLogContext()
@@ -59,21 +64,45 @@ namespace Kimi.Core
 
             //await ModuleAdding.AddModule(host);
 
-            //_client.Log += LogAsync;
-            //sCommands.Log += LogAsync;
+            _client.Log += Logging.LogAsync;
+            sCommands.Log += Logging.LogAsync;
+
 
             _client.Ready += async () =>
             {
-                Console.WriteLine(Assembly.GetEntryAssembly().GetName().Version.ToString());
+                Settings? settings = new Settings();
+                var path = $@"{Info.AppDataPath}\settings.kimi";
+
+                if(!File.Exists(path))
+                    using(StreamWriter sw = new StreamWriter(path))
+                    using(JsonWriter writer = new JsonTextWriter(sw))
+                    {
+                        Log.Information("[{Source}] Settings file doesn't exist, creating default file...", "Kimi");
+                        writer.Formatting = Formatting.Indented;
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.Serialize(writer, settings);
+                    }
+
+                path = File.ReadAllText(path);
+                settings = JsonConvert.DeserializeObject<Settings>(path);
+                Log.Information("[{Source}] Settings loaded!", "Kimi");
+                var profile = settings.Profile;
+
+                var attribute = (AssemblyInformationalVersionAttribute)Assembly.GetExecutingAssembly()
+                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
+                .FirstOrDefault();
+
+                Log.Information("[{Source}] Revision {Version}", "Kimi", Info.Version);
+
                 Console.WriteLine("Ready!");
-                await _client.SetGameAsync("PORN HUB GAY", null, Discord.ActivityType.Watching);
-                await _client.SetStatusAsync(Discord.UserStatus.Idle);
+                await _client.SetGameAsync(profile?.Status, profile?.Link, profile.ActivityType);
+                await _client.SetStatusAsync(profile.UserStatus);
                 await sCommands.RegisterCommandsGloballyAsync();
 
-                Log.Information("Logged in as <{0}#{1}>!", _client.CurrentUser.Username, _client.CurrentUser.Discriminator);
+                Log.Information("[{Source}] Logged in as <{0}#{1}>!", "Kimi", _client.CurrentUser.Username, _client.CurrentUser.Discriminator);
             };
 
-            await _client.LoginAsync(TokenType.Bot, config["Token"]);
+            await _client.LoginAsync(TokenType.Bot, Token.GetToken());
 
             await _client.StartAsync();
 
