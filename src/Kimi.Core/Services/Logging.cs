@@ -37,7 +37,7 @@ namespace Kimi.Core.Services
 
     enum Severity
     {
-        Critical = LogEventLevel.Fatal,
+        Fatal = LogEventLevel.Fatal,
         Error = LogEventLevel.Error,
         Warning = LogEventLevel.Warning,
         Info = LogEventLevel.Information,

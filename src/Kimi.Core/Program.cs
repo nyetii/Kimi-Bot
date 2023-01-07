@@ -85,7 +85,7 @@ namespace Kimi.Core
 
                 path = File.ReadAllText(path);
                 settings = JsonConvert.DeserializeObject<Settings>(path);
-                await Logging.LogAsync("Settings loaded!", Severity.Critical);
+                await Logging.LogAsync("Settings loaded!", Severity.Info);
                 //Log.Information("[{Source}] Settings loaded!", "Kimi");
                 var profile = settings.Profile;
 
