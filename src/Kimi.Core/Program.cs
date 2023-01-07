@@ -85,14 +85,11 @@ namespace Kimi.Core
 
                 path = File.ReadAllText(path);
                 settings = JsonConvert.DeserializeObject<Settings>(path);
-                Log.Information("[{Source}] Settings loaded!", "Kimi");
+                await Logging.LogAsync("Settings loaded!", Severity.Critical);
+                //Log.Information("[{Source}] Settings loaded!", "Kimi");
                 var profile = settings.Profile;
 
-                var attribute = (AssemblyInformationalVersionAttribute)Assembly.GetExecutingAssembly()
-                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
-                .FirstOrDefault();
-
-                Log.Information("[{Source}] Revision {Version}", "Kimi", Info.Version);
+                await Logging.LogAsync($"Revision {Info.Version}");
 
                 Console.WriteLine("Ready!");
                 await _client.SetGameAsync(profile?.Status, profile?.Link, profile.ActivityType);

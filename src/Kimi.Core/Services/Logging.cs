@@ -27,5 +27,21 @@ namespace Kimi.Core.Services
             Log.Write(severity, message.Exception, "[{Source}] {Message}", message.Source, message.Message);
             await Task.CompletedTask;
         }
+
+        internal static async Task LogAsync(string message, Severity severity = Severity.Info)
+        {
+            Log.Write((LogEventLevel)severity, "[{Source}] {Message}", "Kimi", message);
+            await Task.CompletedTask;
+        }
+    }
+
+    enum Severity
+    {
+        Critical = LogEventLevel.Fatal,
+        Error = LogEventLevel.Error,
+        Warning = LogEventLevel.Warning,
+        Info = LogEventLevel.Information,
+        Verbose = LogEventLevel.Verbose,
+        Debug = LogEventLevel.Debug
     }
 }

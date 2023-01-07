@@ -29,6 +29,7 @@ namespace Kimi.Core.Services
                     return token[0];
                 else
                     return token[1];
+
             }
             catch (IndexOutOfRangeException ex)
             {
