@@ -7,8 +7,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Serilog;
+using Serilog.Formatting;
 using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Reflection;
 
 namespace Kimi.Core
@@ -25,6 +28,8 @@ namespace Kimi.Core
                 .MinimumLevel.Debug()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
+                .WriteTo.File(@$"{Info.AppDataPath}\logs\kimi.log", rollingInterval: RollingInterval.Day, 
+                outputTemplate: "[{Timestamp:yyyy-MM-dd - HH:mm:ss.fff}|{Level:u3}] {Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
 
             var config = new ConfigurationBuilder()
@@ -42,7 +47,7 @@ namespace Kimi.Core
                     AlwaysDownloadUsers = false
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
-                //.AddSingleton<InteractionHandler>() 
+                .AddSingleton<InteractionHandler>() 
                 .AddSingleton(x => new CommandService())
                 .AddSingleton<PrefixHandler>())
                 .Build();
@@ -57,12 +62,9 @@ namespace Kimi.Core
 
             var _client = provider.GetRequiredService<DiscordSocketClient>();
             var sCommands = provider.GetRequiredService<InteractionService>();
-            //await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
-            var config = provider.GetRequiredService<IConfigurationRoot>();
-            var pCommands = provider.GetRequiredService<PrefixHandler>();
-            await pCommands.InitializeAsync();
 
-            //await ModuleAdding.AddModule(host);
+            await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
+            await provider.GetRequiredService<PrefixHandler>().InitializeAsync();
 
             _client.Log += Logging.LogAsync;
             sCommands.Log += Logging.LogAsync;
@@ -71,32 +73,16 @@ namespace Kimi.Core
             _client.Ready += async () =>
             {
                 Settings? settings = new Settings();
-                var path = $@"{Info.AppDataPath}\settings.kimi";
-
-                if(!File.Exists(path))
-                    using(StreamWriter sw = new StreamWriter(path))
-                    using(JsonWriter writer = new JsonTextWriter(sw))
-                    {
-                        Log.Information("[{Source}] Settings file doesn't exist, creating default file...", "Kimi");
-                        writer.Formatting = Formatting.Indented;
-                        JsonSerializer serializer = new JsonSerializer();
-                        serializer.Serialize(writer, settings);
-                    }
-
-                path = File.ReadAllText(path);
-                settings = JsonConvert.DeserializeObject<Settings>(path);
-                await Logging.LogAsync("Settings loaded!", Severity.Info);
-                //Log.Information("[{Source}] Settings loaded!", "Kimi");
-                var profile = settings.Profile;
+                KimiData.LoadSettings();
 
                 await Logging.LogAsync($"Revision {Info.Version}");
-
-                Console.WriteLine("Ready!");
+                
+                var profile = settings.Profile;
                 await _client.SetGameAsync(profile?.Status, profile?.Link, profile.ActivityType);
                 await _client.SetStatusAsync(profile.UserStatus);
                 await sCommands.RegisterCommandsGloballyAsync();
 
-                Log.Information("[{Source}] Logged in as <{0}#{1}>!", "Kimi", _client.CurrentUser.Username, _client.CurrentUser.Discriminator);
+                await Logging.LogAsync($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
             };
 
             await _client.LoginAsync(TokenType.Bot, Token.GetToken());
