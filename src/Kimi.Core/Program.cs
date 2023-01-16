@@ -69,6 +69,7 @@ namespace Kimi.Core
             _client.Log += Logging.LogAsync;
             sCommands.Log += Logging.LogAsync;
 
+            SlashCommands slashCommands = new(_client);
 
             _client.Ready += async () =>
             {
@@ -80,10 +81,18 @@ namespace Kimi.Core
                 var profile = settings.Profile;
                 await _client.SetGameAsync(profile?.Status, profile?.Link, profile.ActivityType);
                 await _client.SetStatusAsync(profile.UserStatus);
+
                 await sCommands.RegisterCommandsGloballyAsync();
+
+                
+                await slashCommands.HandleSlashCommands();
 
                 await Logging.LogAsync($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
             };
+
+            _client.SlashCommandExecuted += slashCommands.SlashCommandHandler;
+
+            await KimiData.LoadTweets();
 
             await _client.LoginAsync(TokenType.Bot, Token.GetToken());
 

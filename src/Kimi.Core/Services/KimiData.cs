@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Kimi.Core.Modules.Monark;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,8 @@ namespace Kimi.Core.Services
 {
     internal class KimiData
     {
+        public static Root Monark { get; set; }
+        public static List<Datum> TweetData = new List<Datum>();
         
         public static async void LoadSettings()
         {
@@ -30,6 +33,34 @@ namespace Kimi.Core.Services
             path = File.ReadAllText(path);
             JsonConvert.DeserializeObject<Settings>(path);
             await Logging.LogAsync("Settings loaded!");
+        }
+
+        public static async Task LoadTweets()
+        {
+            var path = File.ReadAllText(@$"{Info.AppDataPath}\modules\monark\monark.json");
+
+            //using(StreamReader sr = new StreamReader(path))
+            //using(JsonReader reader = new JsonTextReader(sr))
+            //{
+            //    reader.SupportMultipleContent = true;
+
+            //    var serializer = new JsonSerializer();
+
+            //    while(reader.Read())
+            //    serializer.Deserialize<Root>(reader);
+            //}
+
+            Monark = JsonConvert.DeserializeObject<Root>(path);
+
+            foreach(var bulk in Monark.bulk)
+            {
+                foreach(var data in bulk.data)
+                {
+                    TweetData.Add(data);
+                }
+            }
+
+            await Task.CompletedTask;
         }
     }
 }
