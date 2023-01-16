@@ -12,16 +12,16 @@ namespace Kimi.Core.Services
 {
     internal class KimiData
     {
-        public static Root Monark { get; set; }
-        public static List<Datum> TweetData = new List<Datum>();
-        
+        public static dynamic? Monark { get; set; }
+        public static List<Datum> TweetData = new();
+
         public static async void LoadSettings()
         {
             Settings? settings = new();
             var path = $@"{Info.AppDataPath}\settings.kimi";
 
             if (!File.Exists(path))
-                using (StreamWriter sw = new StreamWriter(path))
+                await using (StreamWriter sw = new StreamWriter(path))
                 using (JsonWriter writer = new JsonTextWriter(sw))
                 {
                     await Logging.LogAsync("Settings file doesn't exist, creating default file...", Severity.Warning);
@@ -30,34 +30,32 @@ namespace Kimi.Core.Services
                     serializer.Serialize(writer, settings);
                 }
 
-            path = File.ReadAllText(path);
+            path = await File.ReadAllTextAsync(path);
             JsonConvert.DeserializeObject<Settings>(path);
             await Logging.LogAsync("Settings loaded!");
         }
 
         public static async Task LoadTweets()
         {
-            var path = File.ReadAllText(@$"{Info.AppDataPath}\modules\monark\monark.json");
-
-            //using(StreamReader sr = new StreamReader(path))
-            //using(JsonReader reader = new JsonTextReader(sr))
-            //{
-            //    reader.SupportMultipleContent = true;
-
-            //    var serializer = new JsonSerializer();
-
-            //    while(reader.Read())
-            //    serializer.Deserialize<Root>(reader);
-            //}
-
-            Monark = JsonConvert.DeserializeObject<Root>(path);
-
-            foreach(var bulk in Monark.bulk)
+            try
             {
-                foreach(var data in bulk.data)
-                {
-                    TweetData.Add(data);
-                }
+                var path = await File.ReadAllTextAsync(@$"{Info.AppDataPath}\modules\monark\monark.tweets");
+
+                Monark = JsonConvert.DeserializeObject<Root>(path);
+
+                if (Monark != null)
+                    foreach (var bulk in Monark.bulk)
+                    {
+                        foreach (var data in bulk.data)
+                        {
+                            TweetData.Add(data);
+                        }
+                    }
+            }
+            catch (Exception ex)
+            {
+                await Logging.LogAsync(ex.ToString(), Severity.Fatal);
+                Environment.Exit(1);
             }
 
             await Task.CompletedTask;

@@ -28,6 +28,12 @@ namespace Kimi.Core.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Writes log information in behalf of the bot.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="severity"></param>
+        /// <returns></returns>
         internal static async Task LogAsync(string message, Severity severity = Severity.Info)
         {
             Log.Write((LogEventLevel)severity, "[{Source}] {Message}", "Kimi", message);

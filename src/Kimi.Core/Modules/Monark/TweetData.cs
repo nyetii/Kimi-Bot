@@ -8,25 +8,26 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+// ReSharper disable InconsistentNaming
+#pragma warning disable CS8618
+#pragma warning disable IDE1006
 
 namespace Kimi.Core.Modules.Monark
 {
+    
     internal class TweetData
     {
         internal static async Task<string> GetTweet()
         {
             var text = KimiData.TweetData.Select(x => x.text).ToArray();
-            Random rng = new Random();
+            var rng = new Random();
 
-            string[] p1;
-            string[] p2;
-
-            int n = rng.Next(0, text.Count());
+            var n = rng.Next(0, text.Count());
 
             // p1 = TweetData[n].text.ToString().Split(',', '.');
-            p1 = Regex.Replace(text[n], @"http[^\s]+", "").Split(',', '.');
+            string[] p1 = Regex.Replace(text[n], @"http[^\s]+", "").Split(',', '.');
             n = rng.Next(text.Count());
-            p2 = Regex.Replace(text[n], @"http[^\s]+", "").Split(',', '.');
+            string[] p2 = Regex.Replace(text[n], @"http[^\s]+", "").Split(',', '.');
             return await Task.FromResult($"{p1[rng.Next(0, p1.Length)].TrimEnd(' ')} {p2[rng.Next(0, p2.Length)].TrimEnd(' ')}");
         }
     }

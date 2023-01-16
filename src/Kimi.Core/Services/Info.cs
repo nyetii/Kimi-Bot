@@ -13,6 +13,7 @@ namespace Kimi.Core.Services
         public static bool IsDebug { get; set; } = false;
         public static string Version { get; private set; } = GetVersionInfo();
         public static string AppDataPath { get; private set; } = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\Kimi";
+        public static Dictionary<string, dynamic> CommandInfo = new();
 
 
         private static string GetVersionInfo()
@@ -22,6 +23,10 @@ namespace Kimi.Core.Services
                 .FirstOrDefault();
 
             return attribute.InformationalVersion.ToString();
+        }
+
+        public static void GetCommandInfo()
+        {
         }
     }
 }
