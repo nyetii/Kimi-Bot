@@ -50,10 +50,10 @@ namespace Kimi.Core.Modules.Monark
                 var tweet = await context.GetValue("tweet"); 
                 var image = (Attachment?) await context.GetValue("image");
                 var avatar = (Attachment?) await context.GetValue("avatar");
-                var username = await context.GetValue("username");
-                var nickname = await context.GetValue("nickname");
+                var username = (string?) await context.GetValue("username");
+                var nickname = (string?) await context.GetValue("nickname");
 
-                await command.RespondAsync(text: $"https://twitter.com/{WhiteSpacesRegex().Replace(username, "").ToLowerInvariant() ?? "monark"}" +
+                await command.RespondAsync(text: $"https://twitter.com/{(username != null ? WhiteSpacesRegex().Replace(username, "").ToLowerInvariant() : "monark")}" +
                                                  $"/status/{Rng.NextInt64(1000000000000000000, Int64.MaxValue)}/",
                     embed: await TweetEmbed(tweet, image, avatar, username, nickname));
             } 
@@ -67,7 +67,8 @@ namespace Kimi.Core.Modules.Monark
             var author = new EmbedAuthorBuilder()
                 .WithIconUrl(avatar != null ? $"{avatar.Url}" : "https://pbs.twimg.com/profile_images/1414588664169041920/zOl8EzRT_400x400.jpg")
                 .WithName(username != null ? $"{nickname ?? username} " +
-                                             $"(@{WhiteSpacesRegex().Replace((string)username, "").ToLowerInvariant()})" : "♔ Monark (@monark)");
+                                             $"(@{WhiteSpacesRegex().Replace((string)username, "").ToLowerInvariant()})" : 
+                    nickname != null ? $"{nickname} (@monark)" : "♔ Monark (@monark)");
             var footer = new EmbedFooterBuilder()
                 .WithIconUrl("https://abs.twimg.com/icons/apple-touch-icon-192x192.png")
                 .WithText("Twitter");
