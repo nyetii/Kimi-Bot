@@ -15,7 +15,7 @@ namespace Kimi.Core.Services
         public static dynamic? Monark { get; set; }
         public static List<Datum> TweetData = new();
 
-        public static async void LoadSettings()
+        public static async Task<Settings?> LoadSettings()
         {
             Settings? settings = new();
             var path = $@"{Info.AppDataPath}\settings.kimi";
@@ -31,8 +31,10 @@ namespace Kimi.Core.Services
                 }
 
             path = await File.ReadAllTextAsync(path);
-            JsonConvert.DeserializeObject<Settings>(path);
+            settings = JsonConvert.DeserializeObject<Settings>(path);
             await Logging.LogAsync("Settings loaded!");
+
+            return await Task.FromResult(settings);
         }
 
         public static async Task LoadTweets()

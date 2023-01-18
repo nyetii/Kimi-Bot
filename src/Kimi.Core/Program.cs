@@ -73,8 +73,10 @@ namespace Kimi.Core
 
             _client.Ready += async () =>
             {
+                
+                
                 Settings? settings = new Settings();
-                KimiData.LoadSettings();
+                settings = await KimiData.LoadSettings();
 
                 await Logging.LogAsync($"Revision {Info.Version}");
                 
@@ -82,7 +84,7 @@ namespace Kimi.Core
                 await _client.SetGameAsync(profile?.Status, profile?.Link, profile.ActivityType);
                 await _client.SetStatusAsync(profile.UserStatus);
 
-                
+                await Logging.LogAsync(profile?.Status + profile?.ActivityType + profile?.UserStatus);
 
                 
                 await slashCommands.HandleSlashCommands();
