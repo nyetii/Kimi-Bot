@@ -44,7 +44,7 @@ namespace Kimi.Core
                 .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
                 {
                     GatewayIntents = Discord.GatewayIntents.All,
-                    AlwaysDownloadUsers = false
+                    AlwaysDownloadUsers = false,
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton<InteractionHandler>() 
@@ -82,21 +82,25 @@ namespace Kimi.Core
                 await _client.SetGameAsync(profile?.Status, profile?.Link, profile.ActivityType);
                 await _client.SetStatusAsync(profile.UserStatus);
 
-                await sCommands.RegisterCommandsGloballyAsync();
+                
 
                 
                 await slashCommands.HandleSlashCommands();
+                //await sCommands.AddCommandsGloballyAsync();
 
                 await Logging.LogAsync($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
             };
 
-            _client.SlashCommandExecuted += slashCommands.SlashCommandHandler;
+            
+            
 
             await KimiData.LoadTweets();
 
             await _client.LoginAsync(TokenType.Bot, Token.GetToken());
 
             await _client.StartAsync();
+
+            _client.SlashCommandExecuted += slashCommands.SlashCommandHandler;
 
             await Task.Delay(-1);
         }

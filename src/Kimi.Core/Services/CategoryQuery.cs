@@ -57,10 +57,8 @@ namespace Kimi.Core.Services
                 if (t == typeof(Dictionary<string, dynamic>))
                 {
                     Dictionary<string, dynamic> subDictionary = item.Value;
-                    foreach (var kv in subDictionary)
-                    {
-                        return await Task.FromResult(subDictionary.Keys.ToArray());
-                    }
+                    return await Task.FromResult(subDictionary.Keys.ToArray());
+
                 }
             }
             return await Task.FromResult(Commands.Keys.ToArray());
@@ -74,11 +72,8 @@ namespace Kimi.Core.Services
                 if (t == typeof(Dictionary<string, dynamic>))
                 {
                     Dictionary<string, dynamic> subDictionary = item.Value;
-                    foreach (var kv in subDictionary)
-                    {
-                        if (subDictionary.ContainsKey(key))
-                            return await Task.FromResult(subDictionary[key]);
-                    }
+                    if (subDictionary.TryGetValue(key, out dynamic? value))
+                        return await Task.FromResult(value);
                 }
             }
             return await Task.FromResult(Commands[key]);
@@ -102,9 +97,6 @@ namespace Kimi.Core.Services
         {
             foreach (var item in base.Commands)
             {
-                //string k = null;
-                //dynamic val = null;
-                //item.Deconstruct(out k, out val);
 
                 Type t = item.Value.GetType();
                 if (t == typeof(Dictionary<string, dynamic>))
@@ -141,8 +133,8 @@ namespace Kimi.Core.Services
                         if (t == typeof(Dictionary<string, string>))
                         {
                             Dictionary<string, string> paramDictionary = subItem.Value;
-                            if(paramDictionary.ContainsKey(key))
-                                return await Task.FromResult(paramDictionary[key]);
+                            if (paramDictionary.TryGetValue(key, out string? value))
+                                return await Task.FromResult(value);
                         }
                     }
                 }

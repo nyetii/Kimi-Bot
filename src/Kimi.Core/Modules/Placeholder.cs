@@ -15,6 +15,7 @@ namespace Kimi.Core.Modules
         [SlashCommand("ping", "Receive a ping message!")]
         public async Task HandlePingCommand()
         {
+            
             await RespondAsync("andre teixeira");
         }
 

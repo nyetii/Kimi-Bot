@@ -9,30 +9,25 @@ using Discord.Net;
 using Discord.WebSocket;
 using Kimi.Core.Services;
 using Kimi.Core.Services.Interfaces;
+using Serilog;
 
 namespace Kimi.Core.Modules.Monark
 {
     internal class MonarkInitialize : ICommandInitializer
     {
+        private bool _isRegistered;
         private readonly DiscordSocketClient _client;
+        private SlashCommandBuilder _command = new();
 
         public MonarkInitialize(DiscordSocketClient client)
         {
             _client = client;
+            _isRegistered = ICommandInitializer.IsRegistered;
         }
 
         public async Task Initialize()
         {
             await DictionaryEntries();
-
-            //var z = Info.CommandInfo.First(x => x.Key.Equals("monark")).Value;
-            //var z = Info.CommandInfo.SelectMany(x => x.Value.GetType));
-            //E(z);
-            //var abc = Info.CommandInfo["monark"];
-            //foreach (KeyValuePair<string,dynamic> item in abc)
-            //{
-            //    var a1 = (string)item.Value;
-            //}
 
             ICommandQuery cq = new CategoryQuery();
             string[] category = await cq.GetKeys();
@@ -42,15 +37,9 @@ namespace Kimi.Core.Modules.Monark
 
             ICommandQuery pq = new ParameterQuery();
             string[] parameter = await pq.GetKeys();
-
-            //SubcategoryQuery cq = new();
-            //string[] absol = await cq.GetKeys();
-
-            //ParameterQuery mb = new();
-            //string[] jose = await mb.GetKeys();
             
 
-            var monarkCommands = new SlashCommandBuilder()
+            _command = new SlashCommandBuilder()
             .WithName(category[0])
             .WithDescription(await sq.GetValue(subcategory[0]))
             .AddOption(new SlashCommandOptionBuilder()
@@ -92,15 +81,37 @@ namespace Kimi.Core.Modules.Monark
                 .WithName(subcategory[3])
                 .WithDescription(await sq.GetValue(subcategory[3]))
                 .WithType(ApplicationCommandOptionType.SubCommand));
+            
 
             await Task.CompletedTask;
+        }
+
+        public async Task CreateCommand()
+        {
             try
             {
-                await _client.Rest.CreateGuildCommand(monarkCommands.Build(), 973401092274659358);
+                foreach (var item in _client.Rest.GetGlobalApplicationCommands().Result)
+                {
+                    if (!item.Name.Equals(_command.Name)) continue;
+                    _isRegistered = true;
+                    break;
+                }
+                if (!_isRegistered)
+                {
+                    if (Info.IsDebug)
+                        await _client.Rest.CreateGuildCommand(_command.Build(), 973401092274659358);
+                    else
+                        await _client.Rest.CreateGlobalCommand(_command.Build());
+                    await Logging.LogAsync($"{GetType().Name} - Command succesfully created!");
+                    _isRegistered = true;
+                }
+
             }
-            catch(HttpException ex) { }
+            catch (HttpException ex)
+            {
+                await Logging.LogAsync($"{GetType().Name} - Exception!\n{ex}", Severity.Error);
+            }
         }
-        
 
         private static async Task DictionaryEntries()
         {

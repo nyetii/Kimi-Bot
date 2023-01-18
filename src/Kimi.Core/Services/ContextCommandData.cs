@@ -19,12 +19,6 @@ namespace Kimi.Core.Services
 
         public async Task<string[]> GetKeys()
         {
-            //string[] av = new string[1]
-            //{
-            //    _command.Data.Options.First() // Subcommand
-            //        .Options?.AsEnumerable().ToArray()
-            //};
-            //int a = _command.Data.Options.Select(x => x.Options).Count();
             string[] curitiba = new string[_command.Data.Options.First().Options.Count];
 
             int i = 0;
@@ -40,18 +34,11 @@ namespace Kimi.Core.Services
             return await Task.FromResult(curitiba);
         }
 
-        /// <summary>
-        /// Gets the value of the specified subcommand option.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
         public async Task<dynamic?> GetValue(string key)
         {
-            var result = _command.Data.Options.First()           // Subcommand
+            return await Task.FromResult(_command.Data.Options.First()           // Subcommand
                 .Options.FirstOrDefault(x => x.Name == key)?      // Option=
-                .Value;                                                         // Value
-
-            return await Task.FromResult(result);
+                .Value);
         }
 }
 }

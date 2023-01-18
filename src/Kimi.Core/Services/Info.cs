@@ -22,7 +22,7 @@ namespace Kimi.Core.Services
                 .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
                 .FirstOrDefault();
 
-            return attribute.InformationalVersion.ToString();
+            return IsDebug ? attribute.InformationalVersion : $"{attribute.InformationalVersion} REFACTOR";
         }
 
         public static void GetCommandInfo()
