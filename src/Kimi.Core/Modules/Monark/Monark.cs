@@ -29,7 +29,7 @@ namespace Kimi.Core.Modules.Monark
 
             await Task.CompletedTask;
         }
-        
+
         private static async Task MonarkCount(SocketSlashCommand command) => await command.RespondAsync(KimiData.TweetData.Select(x => x.text).Count().ToString());
 
         private static async Task MonarkGenerate(SocketSlashCommand command)
@@ -47,27 +47,27 @@ namespace Kimi.Core.Modules.Monark
             {
                 ICommandQuery context = new ContextCommandData(command);
 
-                var tweet = await context.GetValue("tweet"); 
-                var image = (Attachment?) await context.GetValue("image");
-                var avatar = (Attachment?) await context.GetValue("avatar");
-                var username = (string?) await context.GetValue("username");
-                var nickname = (string?) await context.GetValue("nickname");
+                var tweet = await context.GetValue("tweet");
+                var image = (Attachment?)await context.GetValue("image");
+                var avatar = (Attachment?)await context.GetValue("avatar");
+                var username = (string?)await context.GetValue("username");
+                var nickname = (string?)await context.GetValue("nickname");
 
                 await command.RespondAsync(text: $"https://twitter.com/{(username != null ? WhiteSpacesRegex().Replace(username, "").ToLowerInvariant() : "monark")}" +
                                                  $"/status/{Rng.NextInt64(1000000000000000000, Int64.MaxValue)}/",
                     embed: await TweetEmbed(tweet, image, avatar, username, nickname));
-            } 
-            catch(Exception ex) { await command.RespondAsync(ex.ToString()); }
+            }
+            catch (Exception ex) { await command.RespondAsync(ex.ToString()); }
         }
 
         private static async Task<Embed> TweetEmbed(object tweet, Attachment? image = null, Attachment? avatar = null, object? username = null, object? nickname = null)
         {
-            
+
 
             var author = new EmbedAuthorBuilder()
                 .WithIconUrl(avatar != null ? $"{avatar.Url}" : "https://pbs.twimg.com/profile_images/1414588664169041920/zOl8EzRT_400x400.jpg")
                 .WithName(username != null ? $"{nickname ?? username} " +
-                                             $"(@{WhiteSpacesRegex().Replace((string)username, "").ToLowerInvariant()})" : 
+                                             $"(@{WhiteSpacesRegex().Replace((string)username, "").ToLowerInvariant()})" :
                     nickname != null ? $"{nickname} (@monark)" : "♔ Monark (@monark)");
             var footer = new EmbedFooterBuilder()
                 .WithIconUrl("https://abs.twimg.com/icons/apple-touch-icon-192x192.png")

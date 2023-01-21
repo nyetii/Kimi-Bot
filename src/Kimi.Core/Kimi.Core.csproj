@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Kimi.GPT2\Kimi.GPT2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="appconfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

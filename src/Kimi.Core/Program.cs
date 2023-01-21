@@ -13,6 +13,8 @@ using Serilog.Formatting;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Xml.Schema;
+using Kimi.GPT2;
 
 namespace Kimi.Core
 {
@@ -93,8 +95,9 @@ namespace Kimi.Core
                 await Logging.LogAsync($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
             };
 
-            
-            
+
+            Model model = new();
+            Console.WriteLine(model.Generate());
 
             await KimiData.LoadTweets();
 
