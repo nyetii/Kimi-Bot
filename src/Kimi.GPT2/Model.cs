@@ -1,11 +1,13 @@
 ﻿using System.Diagnostics;
+using System.Net;
 
 namespace Kimi.GPT2
 {
     public class Model
     {
-        public static string? Seed { internal get; set; }
+        public string? Seed { internal get; set; }
         public int Length { internal get; set; }
+        private readonly string _path = IModelData.Path;
 
         public Model(string? seed = null, int length = 5)
         {
@@ -13,25 +15,62 @@ namespace Kimi.GPT2
             Length = length;
         }
 
-        public string Generate()
+        public async Task<bool> IsReady()
         {
-            int i = 4;
-            Seed = i switch
+            try
             {
-                (int)PremadeSeed.Capitalismo => PremadeSeed.Capitalismo.DisplayValue()
-            };
+                IModelData modeldata = new ModelData();
+                if (!Directory.Exists(_path))
+                    Directory.CreateDirectory(_path);
 
-            return Execute();
+                if (!File.Exists($@"{_path}\generate.py"))
+                    await modeldata.DownloadPythonFile();
+
+                if (!Directory.Exists($@"{_path}\model"))
+                    await modeldata.DownloadModel();
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
-        internal static string Execute()
+        
+
+        public async Task<string> Generate()
         {
-            string generation;
+            Random rng = new();
+            var i = (PremadeSeed)rng.Next(0, PremadeSeed.Alexandre.Length());
+            Seed = i switch
+            {
+                PremadeSeed.Capitalismo => PremadeSeed.Capitalismo.DisplayValue(),
+                PremadeSeed.Alexandre => PremadeSeed.Alexandre.DisplayValue(),
+                PremadeSeed.Bolsonaro => PremadeSeed.Bolsonaro.DisplayValue(),
+                PremadeSeed.Ditadura => PremadeSeed.Ditadura.DisplayValue(),
+                PremadeSeed.Dolar => PremadeSeed.Dolar.DisplayValue(),
+                PremadeSeed.ElonMusk => PremadeSeed.ElonMusk.DisplayValue(),
+                PremadeSeed.Flow => PremadeSeed.Flow.DisplayValue(),
+                PremadeSeed.Liberdade => PremadeSeed.Liberdade.DisplayValue(),
+                PremadeSeed.Lula => PremadeSeed.Lula.DisplayValue(),
+                PremadeSeed.Maconha => PremadeSeed.Maconha.DisplayValue(),
+                PremadeSeed.STF => PremadeSeed.Maconha.DisplayValue(),
+                PremadeSeed.Void => null,
+                _ => null
+            };
+
+            return await Execute();
+        }
+
+        internal async Task<string> Execute()
+        {
+            var path = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\Kimi\GPT2";
             ProcessStartInfo start = new()
             {
                 FileName =
                 @"C:\Users\Netty\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\python.exe",
-                Arguments = @$"C:\Users\Netty\Desktop\abc.py " + $"\"{Seed}\", 50",
+                Arguments = @$"{path}\generate.py " + $"\"{Seed}\", 50",
                 UseShellExecute = false,
                 WorkingDirectory = "",
                 RedirectStandardOutput = true
@@ -39,7 +78,7 @@ namespace Kimi.GPT2
 
             using Process process = Process.Start(start);
             using StreamReader reader = process.StandardOutput;
-            return reader.ReadToEnd();
+            return await Task.FromResult(await Generation.Parse(await reader.ReadToEndAsync(), Seed));
         }
     }
 }

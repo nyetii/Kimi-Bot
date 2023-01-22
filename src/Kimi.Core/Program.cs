@@ -97,6 +97,7 @@ namespace Kimi.Core
 
 
             Model model = new();
+            await model.IsReady();
             Console.WriteLine(model.Generate());
 
             await KimiData.LoadTweets();

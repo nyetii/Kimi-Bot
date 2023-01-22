@@ -6,6 +6,7 @@ namespace Kimi.GPT2;
 
 internal enum PremadeSeed
 {
+    Void,
     [Description("alexandre de moraes")]
     Alexandre,
     Maconha,
@@ -13,7 +14,12 @@ internal enum PremadeSeed
     Liberdade,
     Capitalismo,
     Flow,
-    Ditadura
+    Ditadura,
+    Bolsonaro,
+    Lula,
+    Dolar,
+    [Description("elon musk")]
+    ElonMusk
 }
 
 internal static class SeedUtil
@@ -36,5 +42,10 @@ internal static class SeedUtil
         });
 
         return displayValue;
+    }
+
+    public static int Length(this PremadeSeed type)
+    {
+        return type.GetType().GetEnumNames().Length;
     }
 }

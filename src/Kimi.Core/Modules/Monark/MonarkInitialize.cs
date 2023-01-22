@@ -9,12 +9,14 @@ using Discord.Net;
 using Discord.WebSocket;
 using Kimi.Core.Services;
 using Kimi.Core.Services.Interfaces;
+using Kimi.GPT2;
 using Serilog;
 
 namespace Kimi.Core.Modules.Monark
 {
     internal class MonarkInitialize : ICommandInitializer
     {
+        private bool _isEnabled = ICommandInitializer.IsEnabled;
         private bool _isRegistered;
         private readonly DiscordSocketClient _client;
         private SlashCommandBuilder _command = new();
@@ -27,6 +29,9 @@ namespace Kimi.Core.Modules.Monark
 
         public async Task Initialize()
         {
+            Model model = new();
+            _isEnabled = await model.IsReady();
+
             await DictionaryEntries();
 
             ICommandQuery cq = new CategoryQuery();
@@ -40,46 +45,52 @@ namespace Kimi.Core.Modules.Monark
             
 
             _command = new SlashCommandBuilder()
-            .WithName(category[0])
-            .WithDescription(await sq.GetValue(subcategory[0]))
+            .WithName("monark")
+            .WithDescription("Gerar um tweet aleatório do Monark")
             .AddOption(new SlashCommandOptionBuilder()
-                .WithName(subcategory[1])
-                .WithDescription(await sq.GetValue(subcategory[1]))
-                .WithType(ApplicationCommandOptionType.SubCommand))
-            .AddOption(new SlashCommandOptionBuilder()
-                .WithName(subcategory[2])
-                .WithDescription(await pq.GetValue(parameter[0]))
+                .WithName("generate")
+                .WithDescription("Gerar um tweet aleatório do Monark")
                 .WithType(ApplicationCommandOptionType.SubCommand)
                 .AddOption(new SlashCommandOptionBuilder()
-                    .WithName(parameter[1])
-                    .WithDescription(await pq.GetValue(parameter[1]))
+                    .WithName("legacy-mode")
+                    .WithDescription("True = Geração antiga | False = Geração via GPT-2")
+                    .WithType(ApplicationCommandOptionType.Boolean)));
+
+            _command.AddOption(new SlashCommandOptionBuilder()
+                .WithName("force")
+                .WithDescription("Gerar um tweet")
+                .WithType(ApplicationCommandOptionType.SubCommand)
+                .AddOption(new SlashCommandOptionBuilder()
+                    .WithName("tweet")
+                    .WithDescription("Ex.: Olá Mundo!")
                     .WithType(ApplicationCommandOptionType.String)
                     .WithMaxLength(280)
                     .WithMinLength(1)
                     .WithRequired(true))
                 .AddOption(new SlashCommandOptionBuilder()
-                    .WithName(parameter[2])
-                    .WithDescription(await pq.GetValue(parameter[2]))
+                    .WithName("imagem")
+                    .WithDescription("Envie uma iamgem")
                     .WithType(ApplicationCommandOptionType.Attachment))
                 .AddOption(new SlashCommandOptionBuilder()
-                    .WithName(parameter[3])
-                    .WithDescription(await pq.GetValue(parameter[3]))
+                    .WithName("avatar")
+                    .WithDescription("Envie uma imagem")
                     .WithType(ApplicationCommandOptionType.Attachment))
                 .AddOption(new SlashCommandOptionBuilder()
-                    .WithName(parameter[4])
-                    .WithDescription(await pq.GetValue(parameter[4]))
+                    .WithName("username")
+                    .WithDescription("Nome de usuário")
                     .WithType(ApplicationCommandOptionType.String)
                     .WithMaxLength(15)
                     .WithMinLength(3))
                 .AddOption(new SlashCommandOptionBuilder()
-                    .WithName(parameter[5])
-                    .WithDescription(await pq.GetValue(parameter[5]))
+                    .WithName("nickname")
+                    .WithDescription("apelido")
                     .WithType(ApplicationCommandOptionType.String)
                     .WithMaxLength(50)
-                    .WithMinLength(4)))
-            .AddOption(new SlashCommandOptionBuilder()
-                .WithName(subcategory[3])
-                .WithDescription(await sq.GetValue(subcategory[3]))
+                    .WithMinLength(4)));
+
+            _command.AddOption(new SlashCommandOptionBuilder()
+                .WithName("count")
+                .WithDescription("Conta a quantidade de tweets do Monark")
                 .WithType(ApplicationCommandOptionType.SubCommand));
             
 
@@ -90,12 +101,13 @@ namespace Kimi.Core.Modules.Monark
         {
             try
             {
-                foreach (var item in _client.Rest.GetGlobalApplicationCommands().Result)
-                {
-                    if (!item.Name.Equals(_command.Name)) continue;
-                    _isRegistered = true;
-                    break;
-                }
+                if(!Info.IsDebug)
+                    foreach (var item in _client.Rest.GetGlobalApplicationCommands().Result)
+                    {
+                        if (!item.Name.Equals(_command.Name)) continue;
+                        _isRegistered = true;
+                        break;
+                    }
                 if (!_isRegistered)
                 {
                     if (Info.IsDebug)
@@ -120,7 +132,10 @@ namespace Kimi.Core.Modules.Monark
                 new Dictionary<string, dynamic>()
                 {
                     { "description", "Gerar um tweet aleatório do Monark" },
-                    { "generate", "Gerar um tweet aleatório do Monark"},
+                    { "generate", new Dictionary<string, string>
+                    {
+                        {"legacy-mode", "True = Geração antiga | False = Geração via GPT-2"}
+                    }},
                     { "force", new Dictionary<string, string>()
                     {
                         { "description", "Gerar um tweet"},

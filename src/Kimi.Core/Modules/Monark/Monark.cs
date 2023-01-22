@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Kimi.Core.Services.Interfaces;
+using Kimi.GPT2;
 
 namespace Kimi.Core.Modules.Monark
 {
@@ -34,11 +35,35 @@ namespace Kimi.Core.Modules.Monark
 
         private static async Task MonarkGenerate(SocketSlashCommand command)
         {
-            //command.Id
-            await command.RespondAsync(text: $"https://twitter.com/monark" +
-                                             //$"/status/{Rng.NextInt64(1000000000000000000, Int64.MaxValue)}/",
-                                             $"/status/{command.Id.ToString()}/",
-                embed: await TweetEmbed(await TweetData.GetTweet()));
+            try
+            {
+                await command.DeferAsync();
+                ICommandQuery context = new ContextCommandData(command);
+
+                var legacyMode = await context.GetValue("legacy-mode");
+                //var legacyMode = command.Data.Options.First(x => x.Name == "generate").Options.FirstOrDefault().Value;
+                legacyMode ??= false;
+
+                if (legacyMode is null or false)
+                {
+                    Model model = new();
+                    var generation = await model.Generate();
+                    await command.ModifyOriginalResponseAsync(async m =>
+                    {
+                        m.Content = $"https://twitter.com/monark/status/{command.Id}/";
+                        m.Embed = await TweetEmbed(generation);
+                    });
+                }
+                else
+                    await command.FollowupAsync(text: $"https://twitter.com/monark" +
+                                                      //$"/status/{Rng.NextInt64(1000000000000000000, Int64.MaxValue)}/",
+                                                      $"/status/{command.Id}/",
+                        embed: await TweetEmbed(await TweetData.GetTweet()));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
         private static async Task MonarkForce(SocketSlashCommand command)
