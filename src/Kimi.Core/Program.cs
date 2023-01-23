@@ -108,9 +108,8 @@ namespace Kimi.Core
                 else
                     await Logging.LogAsync($"Current cache size: {args.GenerationCache.Count}", Severity.Warning);
             };
-
-            Model model = new();
-            await model.IsReady();
+            
+            await Model.IsReady();
 
             await KimiData.LoadTweets();
 

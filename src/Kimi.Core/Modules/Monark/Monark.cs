@@ -37,16 +37,19 @@ namespace Kimi.Core.Modules.Monark
         {
             try
             {
+                bool isEnabled = await Model.IsReady();
                 await command.DeferAsync();
 
                 Cache cache = new();
                 ICommandQuery context = new ContextCommandData(command);
                 
-                var legacyMode = await context.GetValue("legacy-mode");
+                var legacyMode = (bool?)await context.GetValue("legacy-mode");
                 //var legacyMode = command.Data.Options.First(x => x.Name == "generate").Options.FirstOrDefault().Value;
                 legacyMode ??= false;
 
-                if (legacyMode is null or false)
+                if (Cache.Count == 0)
+                    await command.FollowupAsync(text: await cache.NewCache());
+                if (legacyMode is null or false && isEnabled)
                 {
                     var generation = await cache.GetFromCache();
                     await command.ModifyOriginalResponseAsync(async m =>

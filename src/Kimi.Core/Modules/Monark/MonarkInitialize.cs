@@ -10,6 +10,7 @@ using Discord.WebSocket;
 using Kimi.Core.Services;
 using Kimi.Core.Services.Interfaces;
 using Kimi.GPT2;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Serilog;
 
 namespace Kimi.Core.Modules.Monark
@@ -18,21 +19,23 @@ namespace Kimi.Core.Modules.Monark
     {
         private bool _isEnabled = ICommandInitializer.IsEnabled;
         private bool _isRegistered;
+        private readonly bool _refreshRequested;
         private readonly DiscordSocketClient _client;
         private SlashCommandBuilder _command = new();
 
-        public MonarkInitialize(DiscordSocketClient client)
+        public MonarkInitialize(DiscordSocketClient client, bool refreshRequested = false)
         {
             _client = client;
             _isRegistered = ICommandInitializer.IsRegistered;
+            _refreshRequested = refreshRequested;
         }
 
         public async Task Initialize()
         {
-            Model model = new();
-            _isEnabled = await model.IsReady();
+            _isEnabled = true;
 
-            await DictionaryEntries();
+            if(!_refreshRequested)
+                await DictionaryEntries();
 
             ICommandQuery cq = new CategoryQuery();
             string[] category = await cq.GetKeys();
@@ -93,8 +96,9 @@ namespace Kimi.Core.Modules.Monark
                 .WithName("count")
                 .WithDescription("Conta a quantidade de tweets do Monark")
                 .WithType(ApplicationCommandOptionType.SubCommand));
-            
 
+            if (_refreshRequested)
+                await CreateCommand();
             await Task.CompletedTask;
         }
 
@@ -109,7 +113,7 @@ namespace Kimi.Core.Modules.Monark
                         _isRegistered = true;
                         break;
                     }
-                if (!_isRegistered)
+                if (!_isRegistered || _refreshRequested)
                 {
                     if (Info.IsDebug)
                         await _client.Rest.CreateGuildCommand(_command.Build(), 973401092274659358);

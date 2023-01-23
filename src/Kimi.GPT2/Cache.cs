@@ -24,6 +24,7 @@ namespace Kimi.GPT2
 
     public class Cache
     {
+        public static int Count { get; private set; }
         private static readonly List<string> CacheList = new();
         private static readonly CacheArgs Args = new(CacheList);
         private static readonly string Path = IModelData.Path;
@@ -37,6 +38,7 @@ namespace Kimi.GPT2
 
             Args.GenerationCache = (await File.ReadAllLinesAsync($@"{Path}\cache.kimi")).ToList();
             Args.GenerationCache.RemoveAll(string.IsNullOrWhiteSpace);
+            Count = Args.GenerationCache.Count;
         }
 
         public async Task<string?> GetFromCache()
@@ -50,6 +52,12 @@ namespace Kimi.GPT2
 
             OnRaiseCacheUpdate(new CacheArgs(cache));
             return await Task.FromResult(content);
+        }
+
+        public async Task<string> NewCache()
+        {
+            OnRaiseCacheUpdate(new CacheArgs(Args.GenerationCache));
+            return await Task.FromResult("Sorry, this command is temporarily not available. Try again in a few minutes");
         }
 
         protected virtual void OnRaiseCacheUpdate(CacheArgs args)
@@ -71,6 +79,7 @@ namespace Kimi.GPT2
                 }
             }
 
+            Count = args.GenerationCache.Count;
             File.WriteAllLines($@"{Path}\cache.kimi", args.GenerationCache);
             CacheUpdate?.Invoke(this, args);
         }

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Kimi.GPT2
 {
@@ -7,7 +8,7 @@ namespace Kimi.GPT2
     {
         public string? Seed { internal get; set; }
         public int Length { internal get; set; }
-        private readonly string _path = IModelData.Path;
+        private static readonly string Path = IModelData.Path;
 
         public Model(string? seed = null, int length = 5)
         {
@@ -15,18 +16,18 @@ namespace Kimi.GPT2
             Length = length;
         }
 
-        public async Task<bool> IsReady()
+        public static async Task<bool> IsReady()
         {
             try
             {
                 IModelData modeldata = new ModelData();
-                if (!Directory.Exists(_path))
-                    Directory.CreateDirectory(_path);
+                if (!Directory.Exists(Path))
+                    Directory.CreateDirectory(Path);
 
-                if (!File.Exists($@"{_path}\generate.py"))
+                if (!File.Exists($@"{Path}\generate.py"))
                     await modeldata.DownloadPythonFile();
 
-                if (!Directory.Exists($@"{_path}\model"))
+                if (!Directory.Exists($@"{Path}\model"))
                     await modeldata.DownloadModel();
                 
                 return true;
@@ -78,7 +79,14 @@ namespace Kimi.GPT2
 
             using Process process = Process.Start(start);
             using StreamReader reader = process.StandardOutput;
-            return await Task.FromResult(await Generation.Parse(await reader.ReadToEndAsync(), Seed));
+            var generation = await reader.ReadToEndAsync();
+
+
+            if (!generation.Contains("Traceback"))
+                return await Task.FromResult(await Generation.Parse(generation, Seed));
+
+            await Execute();
+            throw new Exception();
         }
     }
 }
