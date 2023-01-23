@@ -27,7 +27,7 @@ namespace Kimi.Core
             Debug.Assert(Info.IsDebug = true);
 
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
+                .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .WriteTo.File(@$"{Info.AppDataPath}\logs\kimi.log", rollingInterval: RollingInterval.Day, 
@@ -94,11 +94,23 @@ namespace Kimi.Core
 
                 await Logging.LogAsync($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
             };
+            
 
+            await Cache.LoadCacheFile();
+
+            Cache cache = new();
+            cache.CacheUpdate += async (sender, args) =>
+            {
+                var a = args.GenerationCache.Count;
+
+                if(a > 3)
+                    await Logging.LogAsync($"Current cache size: {args.GenerationCache.Count}", Severity.Verbose);
+                else
+                    await Logging.LogAsync($"Current cache size: {args.GenerationCache.Count}", Severity.Warning);
+            };
 
             Model model = new();
             await model.IsReady();
-            Console.WriteLine(model.Generate());
 
             await KimiData.LoadTweets();
 
@@ -109,6 +121,10 @@ namespace Kimi.Core
             _client.SlashCommandExecuted += slashCommands.SlashCommandHandler;
 
             await Task.Delay(-1);
+        }
+
+        public void Brasil(object sender, CacheArgs args)
+        {
         }
     }
 }

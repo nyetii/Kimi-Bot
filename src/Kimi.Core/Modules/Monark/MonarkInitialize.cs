@@ -46,8 +46,9 @@ namespace Kimi.Core.Modules.Monark
 
             _command = new SlashCommandBuilder()
             .WithName("monark")
-            .WithDescription("Gerar um tweet aleatório do Monark")
-            .AddOption(new SlashCommandOptionBuilder()
+            .WithDescription("Gerar um tweet aleatório do Monark");
+
+            _command.AddOption(new SlashCommandOptionBuilder()
                 .WithName("generate")
                 .WithDescription("Gerar um tweet aleatório do Monark")
                 .WithType(ApplicationCommandOptionType.SubCommand)

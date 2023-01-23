@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Kimi.Core.Services.Interfaces;
+using Kimi.GPT2;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace Kimi.Core.Services

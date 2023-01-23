@@ -38,16 +38,17 @@ namespace Kimi.Core.Modules.Monark
             try
             {
                 await command.DeferAsync();
-                ICommandQuery context = new ContextCommandData(command);
 
+                Cache cache = new();
+                ICommandQuery context = new ContextCommandData(command);
+                
                 var legacyMode = await context.GetValue("legacy-mode");
                 //var legacyMode = command.Data.Options.First(x => x.Name == "generate").Options.FirstOrDefault().Value;
                 legacyMode ??= false;
 
                 if (legacyMode is null or false)
                 {
-                    Model model = new();
-                    var generation = await model.Generate();
+                    var generation = await cache.GetFromCache();
                     await command.ModifyOriginalResponseAsync(async m =>
                     {
                         m.Content = $"https://twitter.com/monark/status/{command.Id}/";
