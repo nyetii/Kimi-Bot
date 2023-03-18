@@ -55,7 +55,7 @@ namespace Kimi.Core.Services
             {
                 "monark" => Modules.Monark.Monark.HandleSubCommands(command),
                 "list-roles" => Modules.Placeholder.HandleListRoleCommand(command),
-                _ => Logging.LogAsync(new NotImplementedException().ToString(), Severity.Error)
+                _ => Logging.LogAsync($"<{command.Data.Name}> - {new NotImplementedException()}", Severity.Error)
             };
 
             await Task.CompletedTask;

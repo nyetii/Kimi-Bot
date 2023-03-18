@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Xml.Schema;
+using Kimi.Commands;
 using Kimi.GPT2;
 
 namespace Kimi.Core
@@ -49,9 +50,8 @@ namespace Kimi.Core
                     AlwaysDownloadUsers = false,
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
-                .AddSingleton<InteractionHandler>() 
                 .AddSingleton(x => new CommandService())
-                .AddSingleton<Kimi.Commands.PrefixHandler>())
+                .AddSingleton<CommandHandler>())
                 .Build();
 
             await RunAsync(host);
@@ -65,8 +65,8 @@ namespace Kimi.Core
             var _client = provider.GetRequiredService<DiscordSocketClient>();
             var sCommands = provider.GetRequiredService<InteractionService>();
 
-            await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
-            await provider.GetRequiredService<Kimi.Commands.PrefixHandler>().InitializeAsync();
+            await provider.GetRequiredService<CommandHandler>().InitializeSlashAsync();
+            await provider.GetRequiredService<CommandHandler>().InitializePrefixAsync();
 
             _client.Log += Logging.LogAsync;
             sCommands.Log += Logging.LogAsync;
