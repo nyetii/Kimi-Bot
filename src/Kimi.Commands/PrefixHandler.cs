@@ -1,16 +1,16 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
-namespace Kimi.Core
+namespace Kimi.Commands
 {
-    internal class PrefixHandler
+    public class PrefixHandler
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
@@ -38,7 +38,7 @@ namespace Kimi.Core
 
             int argPos = 0;
 
-            if (!(message.HasCharPrefix(_config["Prefix"][0], ref argPos) || message.HasCharPrefix('-', ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)) 
+            if (!(message.HasCharPrefix(_config["Prefix"][0], ref argPos) || message.HasCharPrefix('-', ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
                 || message.Author.IsBot)
                 return;
 

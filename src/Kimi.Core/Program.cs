@@ -51,7 +51,7 @@ namespace Kimi.Core
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton<InteractionHandler>() 
                 .AddSingleton(x => new CommandService())
-                .AddSingleton<PrefixHandler>())
+                .AddSingleton<Kimi.Commands.PrefixHandler>())
                 .Build();
 
             await RunAsync(host);
@@ -66,7 +66,7 @@ namespace Kimi.Core
             var sCommands = provider.GetRequiredService<InteractionService>();
 
             await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
-            await provider.GetRequiredService<PrefixHandler>().InitializeAsync();
+            await provider.GetRequiredService<Kimi.Commands.PrefixHandler>().InitializeAsync();
 
             _client.Log += Logging.LogAsync;
             sCommands.Log += Logging.LogAsync;
