@@ -31,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Kimi.Commands\Kimi.Commands.csproj" />
     <ProjectReference Include="..\Kimi.GPT2\Kimi.GPT2.csproj" />
+    <ProjectReference Include="..\Kimi.Logging\Kimi.Logging.csproj" />
     <ProjectReference Include="..\Kimi.Services\Kimi.Services.csproj" />
   </ItemGroup>
 
@@ -44,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\Ranking\" />
+    <Folder Include="_Services\Ranking\" />
   </ItemGroup>
 
 </Project>

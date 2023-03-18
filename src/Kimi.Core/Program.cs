@@ -2,7 +2,6 @@
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Kimi.Core.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,7 +14,12 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Xml.Schema;
 using Kimi.Commands;
+using Kimi.Core._Services;
 using Kimi.GPT2;
+using Kimi.Logging;
+using KimiData = Kimi.Services.Core.KimiData;
+using Log = Kimi.Logging.Log;
+using SlashCommands = Kimi.Commands.SlashCommands;
 
 namespace Kimi.Core
 {
@@ -27,13 +31,7 @@ namespace Kimi.Core
         {
             Debug.Assert(Info.IsDebug = true);
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.File(@$"{Info.AppDataPath}\logs\kimi.log", rollingInterval: RollingInterval.Day, 
-                outputTemplate: "[{Timestamp:yyyy-MM-dd - HH:mm:ss.fff}|{Level:u3}] {Message:lj}{NewLine}{Exception}")
-                .CreateLogger();
+            
 
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
@@ -51,7 +49,8 @@ namespace Kimi.Core
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton(x => new CommandService())
-                .AddSingleton<CommandHandler>())
+                .AddSingleton<CommandHandler>()
+                .AddSingleton<LoggerService>())
                 .Build();
 
             await RunAsync(host);
@@ -62,14 +61,16 @@ namespace Kimi.Core
             using IServiceScope serviceScope = host.Services.CreateScope();
             IServiceProvider provider = serviceScope.ServiceProvider;
 
+            await provider.GetRequiredService<LoggerService>().LoggerConfiguration(Environment.CurrentDirectory);
+
             var _client = provider.GetRequiredService<DiscordSocketClient>();
             var sCommands = provider.GetRequiredService<InteractionService>();
 
             await provider.GetRequiredService<CommandHandler>().InitializeSlashAsync();
             await provider.GetRequiredService<CommandHandler>().InitializePrefixAsync();
 
-            _client.Log += Logging.LogAsync;
-            sCommands.Log += Logging.LogAsync;
+            _client.Log += Log.Write;
+            sCommands.Log += Log.Write;
 
             SlashCommands slashCommands = new(_client);
 
@@ -77,22 +78,23 @@ namespace Kimi.Core
             {
                 
                 
-                Settings? settings = new Settings();
-                settings = await KimiData.LoadSettings();
+                Kimi.Services.Core.Settings? settings = new Kimi.Services.Core.Settings();
+                settings = await Services.Core.KimiData.LoadSettings();
 
-                await Logging.LogAsync($"Revision {Info.Version}");
+                
+                await Log.Write($"Revision {Info.Version}");
                 
                 var profile = settings.Profile;
                 await _client.SetGameAsync(profile?.Status, profile?.Link, profile.ActivityType);
                 await _client.SetStatusAsync(profile.UserStatus);
 
-                await Logging.LogAsync(profile?.Status + profile?.ActivityType + profile?.UserStatus);
+                await Log.Write(profile?.Status + profile?.ActivityType + profile?.UserStatus);
 
                 
                 await slashCommands.HandleSlashCommands();
                 //await sCommands.AddCommandsGloballyAsync();
 
-                await Logging.LogAsync($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
+                await Log.Write($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
             };
             
 
@@ -104,9 +106,9 @@ namespace Kimi.Core
                 var a = args.GenerationCache.Count;
 
                 if(a > 3)
-                    await Logging.LogAsync($"Current cache size: {args.GenerationCache.Count}", Severity.Verbose);
+                    await Log.Write($"Current cache size: {args.GenerationCache.Count}", Severity.Verbose);
                 else
-                    await Logging.LogAsync($"Current cache size: {args.GenerationCache.Count}", Severity.Warning);
+                    await Log.Write($"Current cache size: {args.GenerationCache.Count}", Severity.Warning);
             };
             
             await Model.IsReady();

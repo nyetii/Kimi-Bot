@@ -1,7 +1,6 @@
 ﻿using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Kimi.Core.Services;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -42,7 +41,7 @@ namespace Kimi.Core
             }
             catch(Exception ex)
             {
-                await Logging.LogAsync(ex.ToString());
+                //await Logging.LogAsync(ex.ToString());
             }
         }
     }

@@ -11,4 +11,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Kimi.GPT2\Kimi.GPT2.csproj" />
+    <ProjectReference Include="..\Kimi.Logging\Kimi.Logging.csproj" />
+    <ProjectReference Include="..\Kimi.Services\Kimi.Services.csproj" />
+  </ItemGroup>
+
 </Project>
