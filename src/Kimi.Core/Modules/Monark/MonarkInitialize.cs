@@ -34,7 +34,7 @@ namespace Kimi.Core.Modules.Monark
         {
             _isEnabled = true;
 
-            if(!_refreshRequested)
+            if(!_refreshRequested || !_isRegistered)
                 await DictionaryEntries();
 
             ICommandQuery cq = new CategoryQuery();
