@@ -14,11 +14,13 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Xml.Schema;
 using Kimi.Commands;
-using Kimi.Core._Services;
 using Kimi.GPT2;
 using Kimi.Logging;
+using Kimi.Services.Core;
+using Info = Kimi.Services.Core.Info;
 using KimiData = Kimi.Services.Core.KimiData;
 using Log = Kimi.Logging.Log;
+using Settings = Kimi.Services.Core.Settings;
 using SlashCommands = Kimi.Commands.SlashCommands;
 
 namespace Kimi.Core
@@ -42,6 +44,8 @@ namespace Kimi.Core
                 .ConfigureServices((_, services) =>
                 services
                 .AddSingleton(config)
+                .AddSingleton<KimiData>()
+                .AddSingleton<Settings>(x => x.GetRequiredService<KimiData>().LoadSettings())
                 .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
                 {
                     GatewayIntents = Discord.GatewayIntents.All,
@@ -66,9 +70,12 @@ namespace Kimi.Core
             var _client = provider.GetRequiredService<DiscordSocketClient>();
             var sCommands = provider.GetRequiredService<InteractionService>();
 
+            var settings = provider.GetRequiredService<Settings>();
+
+            var genSettings = settings.General;
+
             await provider.GetRequiredService<CommandHandler>().InitializeSlashAsync();
             await provider.GetRequiredService<CommandHandler>().InitializePrefixAsync();
-
             _client.Log += Log.Write;
             sCommands.Log += Log.Write;
 
@@ -76,12 +83,6 @@ namespace Kimi.Core
 
             _client.Ready += async () =>
             {
-                
-                
-                Kimi.Services.Core.Settings? settings = new Kimi.Services.Core.Settings();
-                settings = await Services.Core.KimiData.LoadSettings();
-
-                
                 await Log.Write($"Revision {Info.Version}");
                 
                 var profile = settings.Profile;
@@ -119,7 +120,7 @@ namespace Kimi.Core
 
             await _client.StartAsync();
 
-            _client.SlashCommandExecuted += slashCommands.SlashCommandHandler;
+            //_client.SlashCommandExecuted += slashCommands.SlashCommandHandler;
 
             await Task.Delay(-1);
         }

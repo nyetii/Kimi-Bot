@@ -1,6 +1,6 @@
 ﻿namespace Kimi.Services.Core
 {
-    internal class Token
+    public class Token
     {
         public static string GetToken()
         {

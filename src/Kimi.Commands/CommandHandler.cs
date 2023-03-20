@@ -3,25 +3,32 @@ using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Discord.Interactions;
+using Kimi.Logging;
+using Kimi.Services.Core;
 
 namespace Kimi.Commands
 {
     public class CommandHandler
     {
+        public ulong? GuildId { get; init; }
+        private readonly string[] _prefix;
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
         private readonly IConfigurationRoot _config;
         private readonly IServiceProvider _services;
         private readonly InteractionService _slash;
 
-        public CommandHandler(DiscordSocketClient client, CommandService commands, InteractionService slash, IConfigurationRoot config, IServiceProvider services)
+        public CommandHandler(Settings settings, DiscordSocketClient client, CommandService commands, InteractionService slash, IConfigurationRoot config, IServiceProvider services)
         {
+            GuildId = settings.General.DebugGuildId;
+            _prefix = settings.General.Prefix;
             _client = client;
             _commands = commands;
             _slash = slash;
@@ -33,6 +40,16 @@ namespace Kimi.Commands
         {
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
             _client.MessageReceived += HandleCommandAsync;
+            _client.SlashCommandExecuted += async (command) =>
+            {
+                _ = command.Data.Name switch
+                {
+                    //"monark" => Modules.Monark.Monark.HandleSubCommands(command),
+                    //"list-roles" => Modules.Placeholder.HandleListRoleCommand(command),
+                    _ => Log.Write($"<{command.Data.Name}> - {new NotImplementedException()}", Severity.Error)
+                };
+                await Task.CompletedTask;
+            };
         }
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
@@ -42,8 +59,9 @@ namespace Kimi.Commands
 
             int argPos = 0;
 
-            if (!(message.HasCharPrefix(_config["Prefix"][0], ref argPos) || message.HasCharPrefix('-', ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
-                || message.Author.IsBot)
+            bool hasPrefix = _prefix.Any(prefix => message.HasStringPrefix(prefix, ref argPos));
+                
+            if(!hasPrefix && !message.HasMentionPrefix(_client.CurrentUser, ref argPos))
                 return;
 
             var context = new SocketCommandContext(_client, message);

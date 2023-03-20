@@ -34,8 +34,6 @@ namespace Kimi.Logging
         /// <returns></returns>
         public static async Task Write(string message, Severity severity = Severity.Info, [CallerFilePath] string? module = null)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
             module ??= "Kimi";
             string[] names = module.Split(@"\");
             foreach (var name in names)
@@ -44,9 +42,6 @@ namespace Kimi.Logging
                 names = name.Split('.');
                 module = names[1];
             }
-
-            stopwatch.Stop();
-            Console.WriteLine($"Elapsed - {stopwatch.Elapsed.TotalNanoseconds:00} ns");
             Serilog.Log.Write((LogEventLevel)severity, "[{Source}] {Message}", $"{module}", message);
             await Task.CompletedTask;
         }

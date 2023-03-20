@@ -8,26 +8,31 @@ namespace Kimi.Services.Core
         public static dynamic? Monark { get; set; }
         public static List<dynamic> TweetData = new();
 
-        public static async Task<Settings?> LoadSettings()
+        public Settings LoadSettings()
         {
-            Settings? settings = new();
+            var serializer = new JsonSerializer();
+            var settings = new Settings();
             var path = $@"{Info.AppDataPath}\settings.kimi";
 
             if (!File.Exists(path))
-                await using (StreamWriter sw = new StreamWriter(path))
+                using (StreamWriter sw = new StreamWriter(path))
                 using (JsonWriter writer = new JsonTextWriter(sw))
                 {
-                    await Log.Write("Settings file doesn't exist, creating default file...", Severity.Warning);
+                    Log.Write("Settings file doesn't exist, creating default file...", Severity.Warning);
                     writer.Formatting = Formatting.Indented;
-                    JsonSerializer serializer = new JsonSerializer();
                     serializer.Serialize(writer, settings);
                 }
 
-            path = await File.ReadAllTextAsync(path);
-            settings = JsonConvert.DeserializeObject<Settings>(path);
-            await Log.Write("Settings loaded!");
+            using (var sr = new StreamReader(path))
+            {
+                settings = (Settings?)serializer.Deserialize(sr, typeof(Settings));
+                Log.Write("Settings loaded!");
+            }
 
-            return await Task.FromResult(settings);
+            if(settings == null)
+                throw new ArgumentNullException(nameof(settings));
+
+            return settings;
         }
 
         public static async Task LoadTweets()

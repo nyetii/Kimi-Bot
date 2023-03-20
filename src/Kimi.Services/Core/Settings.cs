@@ -1,10 +1,18 @@
-﻿using Discord;
+﻿using System.Net.NetworkInformation;
+using Discord;
 
 namespace Kimi.Services.Core
 {
     public class Settings
     {
-        public Profile Profile { get; set; } = new Profile();
+        public General General { get; set; } = new();
+        public Profile Profile { get; set; } = new();
+    }
+
+    public class General
+    {
+        public string[] Prefix { get; set; } = { "!", "k!" };
+        public ulong? DebugGuildId { get; set; } = null;
     }
 
     public class Profile
