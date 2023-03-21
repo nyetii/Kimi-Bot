@@ -12,7 +12,7 @@ namespace Kimi.Services.Core
     public class General
     {
         public string[] Prefix { get; set; } = { "!", "k!" };
-        public ulong? DebugGuildId { get; set; } = null;
+        public ulong[]? DebugGuildId { get; set; } = null;
     }
 
     public class Profile

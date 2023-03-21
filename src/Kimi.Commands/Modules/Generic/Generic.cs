@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
-using Kimi.Core._Services;
+using Kimi.Services.Core;
 
-namespace Kimi.Core._Modules.Generic
+namespace Kimi.Commands.Modules.Generic
 {
     public class Generic : ModuleBase<SocketCommandContext>
     {

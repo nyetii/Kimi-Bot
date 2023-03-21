@@ -9,11 +9,12 @@ namespace Kimi.Services.Core
         public static string Version { get; private set; } = GetVersionInfo();
         public static string AppDataPath { get; private set; } = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\Kimi";
         public static Dictionary<string, dynamic> CommandInfo = new();
+        public static string? SlashCommandsTable { get; set; }
 
 
         private static string GetVersionInfo()
         {
-            var attribute = (AssemblyInformationalVersionAttribute)Assembly.GetExecutingAssembly()
+            var attribute = (AssemblyInformationalVersionAttribute)Assembly.GetEntryAssembly()
                 .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
                 .FirstOrDefault();
 

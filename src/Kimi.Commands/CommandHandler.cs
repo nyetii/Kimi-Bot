@@ -10,14 +10,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Discord.Interactions;
+using Kimi.Commands.Modules.Monark;
 using Kimi.Logging;
 using Kimi.Services.Core;
+using IResult = Discord.Interactions.IResult;
 
 namespace Kimi.Commands
 {
     public class CommandHandler
     {
-        public ulong? GuildId { get; init; }
+        public ulong[]? GuildId { get; init; }
         private readonly string[] _prefix;
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
@@ -38,18 +40,10 @@ namespace Kimi.Commands
 
         public async Task InitializePrefixAsync()
         {
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+
+            await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
             _client.MessageReceived += HandleCommandAsync;
-            _client.SlashCommandExecuted += async (command) =>
-            {
-                _ = command.Data.Name switch
-                {
-                    //"monark" => Modules.Monark.Monark.HandleSubCommands(command),
-                    //"list-roles" => Modules.Placeholder.HandleListRoleCommand(command),
-                    _ => Log.Write($"<{command.Data.Name}> - {new NotImplementedException()}", Severity.Error)
-                };
-                await Task.CompletedTask;
-            };
+
         }
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
@@ -60,8 +54,8 @@ namespace Kimi.Commands
             int argPos = 0;
 
             bool hasPrefix = _prefix.Any(prefix => message.HasStringPrefix(prefix, ref argPos));
-                
-            if(!hasPrefix && !message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+
+            if (!hasPrefix && !message.HasMentionPrefix(_client.CurrentUser, ref argPos))
                 return;
 
             var context = new SocketCommandContext(_client, message);
@@ -74,8 +68,22 @@ namespace Kimi.Commands
 
         public async Task InitializeSlashAsync()
         {
-            await _slash.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            await TweetData.LoadTweets();
+            await _slash.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
             _client.InteractionCreated += HandleInteractionAsync;
+            _slash.SlashCommandExecuted += SlashCommandExecuted;
+            ;
+            //_client.SlashCommandExecuted += async (command) =>
+            //{
+            //    _ = command.Data.Name switch
+            //    {
+
+            //        //"monark" => Monark.HandleSubCommands(command),
+            //        //"list-roles" => Modules.Placeholder.HandleListRoleCommand(command),
+            //        _ => Log.Write($"<{command.Data.Name}> - {new NotImplementedException()}", Severity.Error)
+            //    };
+            //    await Task.CompletedTask;
+            //};
         }
 
         private async Task HandleInteractionAsync(SocketInteraction arg)
@@ -87,8 +95,11 @@ namespace Kimi.Commands
             }
             catch (Exception ex)
             {
-                //await Logging.LogAsync(ex.ToString());
+                await Log.Write(ex.ToString());
             }
         }
+
+        private Task SlashCommandExecuted(SlashCommandInfo arg1, Discord.IInteractionContext arg2, IResult arg3) =>
+            Task.CompletedTask;
     }
 }

@@ -3,7 +3,7 @@ using Discord;
 using Discord.Commands;
 using Kimi.Logging;
 
-namespace Kimi.Core._Modules.Utils
+namespace Kimi.Commands.Modules.Utils
 {
     public class Purge : ModuleBase<SocketCommandContext>
     {

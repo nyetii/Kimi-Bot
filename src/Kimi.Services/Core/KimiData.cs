@@ -5,9 +5,6 @@ namespace Kimi.Services.Core
 {
     public class KimiData
     {
-        public static dynamic? Monark { get; set; }
-        public static List<dynamic> TweetData = new();
-
         public Settings LoadSettings()
         {
             var serializer = new JsonSerializer();
@@ -35,30 +32,34 @@ namespace Kimi.Services.Core
             return settings;
         }
 
-        public static async Task LoadTweets()
-        {
-            //try
-            //{
-            //    var path = await File.ReadAllTextAsync(@$"{Info.AppDataPath}\modules\monark\monark.tweets");
+        //public static async Task LoadTweets()
+        //{
+        //    try
+        //    {
+        //        using (var sr = new StreamReader(@$"{Info.AppDataPath}\modules\monark\monark.tweets"))
+        //        {
+        //            JsonSerializer serializer = new ();
+        //            Monark = serializer.Deserialize(sr, typeof());
+        //        }
 
-            //    Monark = JsonConvert.DeserializeObject<Root>(path);
+        //        Monark = JsonConvert.DeserializeObject<Root>(path);
 
-            //    if (Monark != null)
-            //        foreach (var bulk in Monark.bulk)
-            //        {
-            //            foreach (var data in bulk.data)
-            //            {
-            //                TweetData.Add(data);
-            //            }
-            //        }
-            //}
-            //catch (Exception ex)
-            //{
-            //    await Logging.LogAsync(ex.ToString(), Severity.Fatal);
-            //    Environment.Exit(1);
-            //}
+        //        if (Monark != null)
+        //            foreach (var bulk in Monark.bulk)
+        //            {
+        //                foreach (var data in bulk.data)
+        //                {
+        //                    TweetData.Add(data);
+        //                }
+        //            }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await Log.Write(ex.ToString(), Severity.Fatal);
+        //        Environment.Exit(1);
+        //    }
 
-            await Task.CompletedTask;
-        }
+        //    await Task.CompletedTask;
+        //}
     }
 }

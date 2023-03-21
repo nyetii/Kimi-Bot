@@ -14,6 +14,7 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Xml.Schema;
 using Kimi.Commands;
+using Kimi.Commands.Modules.Utils;
 using Kimi.GPT2;
 using Kimi.Logging;
 using Kimi.Services.Core;
@@ -21,7 +22,6 @@ using Info = Kimi.Services.Core.Info;
 using KimiData = Kimi.Services.Core.KimiData;
 using Log = Kimi.Logging.Log;
 using Settings = Kimi.Services.Core.Settings;
-using SlashCommands = Kimi.Commands.SlashCommands;
 
 namespace Kimi.Core
 {
@@ -79,7 +79,7 @@ namespace Kimi.Core
             _client.Log += Log.Write;
             sCommands.Log += Log.Write;
 
-            SlashCommands slashCommands = new(_client);
+            //SlashCommands slashCommands = new(_client);
 
             _client.Ready += async () =>
             {
@@ -92,8 +92,12 @@ namespace Kimi.Core
                 await Log.Write(profile?.Status + profile?.ActivityType + profile?.UserStatus);
 
                 
-                await slashCommands.HandleSlashCommands();
-                //await sCommands.AddCommandsGloballyAsync();
+                if(settings.General.DebugGuildId != null)
+                    foreach (var guild in settings.General.DebugGuildId)
+                        await sCommands.RegisterCommandsToGuildAsync(guild, true);
+
+                var state = new Commands.Modules.Utils.CommandInfo(sCommands);
+                await Log.Write(await state.HandleSlashCommandsTable());
 
                 await Log.Write($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
             };
@@ -114,7 +118,7 @@ namespace Kimi.Core
             
             await Model.IsReady();
 
-            await KimiData.LoadTweets();
+            //await .LoadTweets();
 
             await _client.LoginAsync(TokenType.Bot, Token.GetToken());
 

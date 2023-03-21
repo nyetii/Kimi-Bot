@@ -1,19 +1,23 @@
-﻿using System.Text.RegularExpressions;
-using Kimi.Core._Services;
+﻿using System.IO;
+using System.Text.RegularExpressions;
+using Kimi.Logging;
 using Kimi.Services.Core;
+using Newtonsoft.Json;
 
 // ReSharper disable InconsistentNaming
 #pragma warning disable CS8618
 #pragma warning disable IDE1006
 
-namespace Kimi.Core._Modules.Monark
+namespace Kimi.Commands.Modules.Monark
 {
     
     internal class TweetData
     {
+        public static Root? Monark { get; set; }
+        public static List<dynamic?> TData = new();
         internal static async Task<string> GetTweet()
         {
-            var text = KimiData.TweetData.Select(x => x.text).ToArray();
+            var text = TData.Select(x => x?.text ?? "").ToArray();
             var rng = new Random();
 
             var n = rng.Next(0, text.Count());
@@ -23,6 +27,34 @@ namespace Kimi.Core._Modules.Monark
             n = rng.Next(text.Count());
             string[] p2 = Regex.Replace(text[n], @"http[^\s]+", "").Split(',', '.');
             return await Task.FromResult($"{p1[rng.Next(0, p1.Length)].TrimEnd(' ')} {p2[rng.Next(0, p2.Length)].TrimEnd(' ')}");
+        }
+
+        public static async Task LoadTweets()
+        {
+            try
+            {
+                using (var sr = new StreamReader(@$"{Info.AppDataPath}\modules\monark\monark.tweets"))
+                {
+                    JsonSerializer serializer = new();
+                    Monark = (Root?)serializer.Deserialize(sr, typeof(Root));
+                }
+
+                if (Monark != null)
+                    foreach (var bulk in Monark.bulk)
+                    {
+                        foreach (var data in bulk.data)
+                        {
+                            TData.Add(data);
+                        }
+                    }
+            }
+            catch (Exception ex)
+            {
+                await Log.Write(ex.ToString(), Severity.Fatal);
+                Environment.Exit(1);
+            }
+
+            await Task.CompletedTask;
         }
     }
 

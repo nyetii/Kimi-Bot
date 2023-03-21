@@ -15,7 +15,13 @@ namespace Kimi.Commands.Modules
         public async Task HandlePingCommand()
         {
             
-            await RespondAsync("andre teixeira");
+            await RespondAsync("andre? teixeira");
+        }
+
+        [SlashCommand("pong", "AAAAA")]
+        public async Task HandlePongCommand()
+        {
+            await RespondAsync("SDFHGSDKLJGFSA");
         }
 
         public static async Task HandleListRoleCommand(SocketSlashCommand command)
