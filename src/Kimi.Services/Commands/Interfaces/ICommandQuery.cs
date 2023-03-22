@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Kimi.Core.Services.Interfaces
+﻿namespace Kimi.Services.Commands.Interfaces
 {
-    internal interface ICommandQuery
+    public interface ICommandQuery
     {
         /// <summary>
         /// Gets all the keys of the determined scope.

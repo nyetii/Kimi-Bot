@@ -2,19 +2,23 @@
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Kimi.Core.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Serilog;
-using Serilog.Formatting;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Xml.Schema;
+using Kimi.Commands;
 using Kimi.GPT2;
+using Kimi.Logging;
+using Kimi.Services.Core;
+using Info = Kimi.Services.Core.Info;
+using KimiData = Kimi.Services.Core.KimiData;
+using Log = Kimi.Logging.Log;
+using Settings = Kimi.Services.Core.Settings;
 
 namespace Kimi.Core
 {
@@ -26,32 +30,26 @@ namespace Kimi.Core
         {
             Debug.Assert(Info.IsDebug = true);
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.File(@$"{Info.AppDataPath}\logs\kimi.log", rollingInterval: RollingInterval.Day, 
-                outputTemplate: "[{Timestamp:yyyy-MM-dd - HH:mm:ss.fff}|{Level:u3}] {Message:lj}{NewLine}{Exception}")
-                .CreateLogger();
+            Console.Title = Info.IsDebug ? "Kimi [DEBUG]" : "Kimi";
 
             var config = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appconfig.json")
                 .Build();
 
             using IHost host = Host.CreateDefaultBuilder()
                 .ConfigureServices((_, services) =>
                 services
                 .AddSingleton(config)
+                .AddSingleton<KimiData>()
+                .AddSingleton<Settings>(x => x.GetRequiredService<KimiData>().LoadSettings())
                 .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
                 {
                     GatewayIntents = Discord.GatewayIntents.All,
                     AlwaysDownloadUsers = false,
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
-                .AddSingleton<InteractionHandler>() 
                 .AddSingleton(x => new CommandService())
-                .AddSingleton<PrefixHandler>())
+                .AddSingleton<CommandHandler>()
+                .AddSingleton<LoggerService>())
                 .Build();
 
             await RunAsync(host);
@@ -62,68 +60,41 @@ namespace Kimi.Core
             using IServiceScope serviceScope = host.Services.CreateScope();
             IServiceProvider provider = serviceScope.ServiceProvider;
 
+            await provider.GetRequiredService<LoggerService>().LoggerConfiguration(Info.AppDataPath);
+
             var _client = provider.GetRequiredService<DiscordSocketClient>();
             var sCommands = provider.GetRequiredService<InteractionService>();
 
-            await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
-            await provider.GetRequiredService<PrefixHandler>().InitializeAsync();
+            var settings = provider.GetRequiredService<Settings>();
 
-            _client.Log += Logging.LogAsync;
-            sCommands.Log += Logging.LogAsync;
+            await provider.GetRequiredService<CommandHandler>().InitializeSlashAsync();
+            await provider.GetRequiredService<CommandHandler>().InitializePrefixAsync();
 
-            SlashCommands slashCommands = new(_client);
+            _client.Log += Log.Write;
+            sCommands.Log += Log.Write;
 
             _client.Ready += async () =>
             {
-                
-                
-                Settings? settings = new Settings();
-                settings = await KimiData.LoadSettings();
-
-                await Logging.LogAsync($"Revision {Info.Version}");
+                await Log.Write($"Revision {Info.Version}");
                 
                 var profile = settings.Profile;
                 await _client.SetGameAsync(profile?.Status, profile?.Link, profile.ActivityType);
                 await _client.SetStatusAsync(profile.UserStatus);
 
-                await Logging.LogAsync(profile?.Status + profile?.ActivityType + profile?.UserStatus);
+                var state = new Commands.Modules.Utils.CommandInfo(sCommands);
+                await Log.Write(await state.HandleSlashCommandsTable());
 
-                
-                await slashCommands.HandleSlashCommands();
-                //await sCommands.AddCommandsGloballyAsync();
-
-                await Logging.LogAsync($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
+                await Log.Write($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
+                await Log.Write($"{profile.UserStatus} - {profile.ActivityType} {profile.Status}");
             };
-            
 
-            await Cache.LoadCacheFile();
-
-            Cache cache = new();
-            cache.CacheUpdate += async (sender, args) =>
-            {
-                var a = args.GenerationCache.Count;
-
-                if(a > 3)
-                    await Logging.LogAsync($"Current cache size: {args.GenerationCache.Count}", Severity.Verbose);
-                else
-                    await Logging.LogAsync($"Current cache size: {args.GenerationCache.Count}", Severity.Warning);
-            };
-            
             await Model.IsReady();
-
-            await KimiData.LoadTweets();
 
             await _client.LoginAsync(TokenType.Bot, Token.GetToken());
 
             await _client.StartAsync();
 
-            _client.SlashCommandExecuted += slashCommands.SlashCommandHandler;
-
             await Task.Delay(-1);
-        }
-
-        public void Brasil(object sender, CacheArgs args)
-        {
         }
     }
 }

@@ -1,12 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Kimi.Core.Modules
+namespace Kimi.Commands.Modules
 {
     public class PrefixModule : ModuleBase<SocketCommandContext>
     {

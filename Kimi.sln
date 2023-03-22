@@ -5,7 +5,13 @@ VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kimi.Core", "src\Kimi.Core\Kimi.Core.csproj", "{D986CEE5-675D-41EE-B083-39318E320D83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi.GPT2", "src\Kimi.GPT2\Kimi.GPT2.csproj", "{EC11BD35-E592-4B59-9B17-12E389B84E5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kimi.GPT2", "src\Kimi.GPT2\Kimi.GPT2.csproj", "{EC11BD35-E592-4B59-9B17-12E389B84E5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi.Services", "src\Kimi.Services\Kimi.Services.csproj", "{F5E4D612-FDC2-4A1A-B832-490E0D2C317D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi.Commands", "src\Kimi.Commands\Kimi.Commands.csproj", "{F5C976F7-6FC6-4033-A765-D8E253004083}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi.Logging", "src\Kimi.Logging\Kimi.Logging.csproj", "{1421E000-D8E2-49F7-A89E-571D48FCFFD0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +27,18 @@ Global
 		{EC11BD35-E592-4B59-9B17-12E389B84E5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC11BD35-E592-4B59-9B17-12E389B84E5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC11BD35-E592-4B59-9B17-12E389B84E5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5E4D612-FDC2-4A1A-B832-490E0D2C317D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5E4D612-FDC2-4A1A-B832-490E0D2C317D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5E4D612-FDC2-4A1A-B832-490E0D2C317D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5E4D612-FDC2-4A1A-B832-490E0D2C317D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5C976F7-6FC6-4033-A765-D8E253004083}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5C976F7-6FC6-4033-A765-D8E253004083}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5C976F7-6FC6-4033-A765-D8E253004083}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5C976F7-6FC6-4033-A765-D8E253004083}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1421E000-D8E2-49F7-A89E-571D48FCFFD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1421E000-D8E2-49F7-A89E-571D48FCFFD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1421E000-D8E2-49F7-A89E-571D48FCFFD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1421E000-D8E2-49F7-A89E-571D48FCFFD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

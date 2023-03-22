@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using Kimi.Core.Services.Interfaces;
+﻿using Kimi.Services.Commands.Interfaces;
+using Kimi.Services.Core;
 
-namespace Kimi.Core.Services
+namespace Kimi.Services.Commands
 {
-    internal class CategoryQuery : ICommandQuery
+    public class CategoryQuery : ICommandQuery
     {
         protected readonly string? Key = null;
         protected readonly Dictionary<string, dynamic> Commands;

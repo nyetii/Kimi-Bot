@@ -5,7 +5,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.1</Version>
+    <Version>2.0</Version>
     <Title>Kimi</Title>
     <AssemblyName>Kimi</AssemblyName>
     <ApplicationIcon>kimi.ico</ApplicationIcon>
@@ -23,13 +23,13 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Serilog" Version="2.12.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kimi.Commands\Kimi.Commands.csproj" />
     <ProjectReference Include="..\Kimi.GPT2\Kimi.GPT2.csproj" />
+    <ProjectReference Include="..\Kimi.Logging\Kimi.Logging.csproj" />
+    <ProjectReference Include="..\Kimi.Services\Kimi.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,10 +39,6 @@
     <None Update="settings.kimi">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\Ranking\" />
   </ItemGroup>
 
 </Project>

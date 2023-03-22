@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using Discord.Commands;
+﻿using Discord.Commands;
+using Discord.Interactions;
+using Kimi.Logging;
+using Serilog;
+using RequireOwner = Discord.Commands.RequireOwnerAttribute;
 
-namespace Kimi.Core.Modules.Utils
+namespace Kimi.Commands.Modules.Utils
 {
     public class State : ModuleBase<SocketCommandContext>
     {
@@ -18,5 +15,6 @@ namespace Kimi.Core.Modules.Utils
             await ReplyAsync("Bye!");
             Environment.Exit(0);
         }
+
     }
 }

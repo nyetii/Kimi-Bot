@@ -1,17 +1,15 @@
-﻿using Discord;
+﻿using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using Discord;
 using Serilog;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Kimi.Core.Services
+namespace Kimi.Logging
 {
-    internal class Logging
+    public class Log
     {
-        internal static async Task LogAsync(LogMessage message)
+        public static async Task Write(LogMessage message)
         {
             var severity = message.Severity switch
             {
@@ -24,7 +22,7 @@ namespace Kimi.Core.Services
                 _ => LogEventLevel.Information
             };
 
-            Log.Write(severity, message.Exception, "[{Source}] {Message}", message.Source, message.Message);
+            Serilog.Log.Write(severity, message.Exception, "[{Source}] {Message}", message.Source, message.Message);
             await Task.CompletedTask;
         }
 
@@ -34,14 +32,22 @@ namespace Kimi.Core.Services
         /// <param name="message"></param>
         /// <param name="severity"></param>
         /// <returns></returns>
-        internal static async Task LogAsync(string message, Severity severity = Severity.Info)
+        public static async Task Write(string message, Severity severity = Severity.Info, [CallerFilePath] string? module = null)
         {
-            Log.Write((LogEventLevel)severity, "[{Source}] {Message}", "Kimi", message);
+            module ??= "Kimi";
+            string[] names = module.Split(@"\");
+            foreach (var name in names)
+            {
+                if (!name.Contains("Kimi.")) continue;
+                names = name.Split('.');
+                module = names[1];
+            }
+            Serilog.Log.Write((LogEventLevel)severity, "[{Source}] {Message}", $"{module}", message);
             await Task.CompletedTask;
         }
     }
 
-    enum Severity
+    public enum Severity
     {
         Fatal = LogEventLevel.Fatal,
         Error = LogEventLevel.Error,

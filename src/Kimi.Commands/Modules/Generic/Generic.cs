@@ -1,13 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Kimi.Core.Services;
+using Kimi.Services.Core;
 
-namespace Kimi.Core.Modules.Generic
+namespace Kimi.Commands.Modules.Generic
 {
     public class Generic : ModuleBase<SocketCommandContext>
     {

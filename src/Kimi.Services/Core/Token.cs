@@ -1,27 +1,15 @@
-﻿using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
+﻿using Kimi.Logging;
 
-namespace Kimi.Core.Services
+namespace Kimi.Services.Core
 {
-    internal class Token
+    public class Token
     {
         public static string GetToken()
         {
             try
             {
-                Log.Information("[{Source}] Fetching token!", "Kimi");
-                string path;
-                //#if DEBUG
-                //path = @$"{Info.AppDataPath}\debugtoken.kimi";
-                //#else
-                path = @$"{Info.AppDataPath}\token.kimi";
-                //#endif
+                Log.Write("Fetching token!");
+                var path = @$"{Info.AppDataPath}\token.kimi";
 
                 string[] token = File.ReadAllLines(path);
 
@@ -33,16 +21,16 @@ namespace Kimi.Core.Services
             }
             catch (IndexOutOfRangeException ex)
             {
-                Log.Error("[{Source}] {ex}", "Kimi", ex.Message);
-                Log.Error("[{Source}] Probably the token for this instance hasn't been defined, using default token as fallback...", "Kimi");
+                Log.Write(ex.Message, Severity.Error);
+                Log.Write("Probably the token for this instance hasn't been defined, using default token as fallback...", Severity.Warning);
                 Info.IsDebug = false;
                 return GetToken();
             }
             catch(Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
             {
-                Log.Error("[{Source}] {ex}", "Kimi", ex.Message);
-                Log.Information("[{Source}] The file and directory will be automatically created.", "Kimi");
-                Log.Information("[{Source}] Creating directory...", "Kimi");
+                Log.Write(ex.Message, Severity.Error);
+                Log.Write("The file and directory will be automatically created", Severity.Warning);
+                Log.Write("Creating directory...");
                 CreateDirectory();
 
                 string path = $@"{Info.AppDataPath}\token.kimi";
@@ -60,7 +48,7 @@ namespace Kimi.Core.Services
             }
             catch(Exception ex)
             {
-                Log.Error("[{Source}] {ex}", "Kimi", ex.Message);
+                Log.Write(ex.Message, Severity.Fatal);
                 Console.ReadKey();
                 Environment.Exit(1);
                 return ex.Message.ToString();
