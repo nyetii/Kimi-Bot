@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Discord.Interactions;
 using Kimi.Commands.Modules.Monark;
+using Kimi.GPT2;
 using Kimi.Logging;
 using Kimi.Services.Core;
 using IResult = Discord.Interactions.IResult;
@@ -68,6 +69,7 @@ namespace Kimi.Commands
 
         public async Task InitializeSlashAsync()
         {
+            await Cache.LoadCacheFile();
             await TweetData.LoadTweets();
             await _slash.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
             _client.InteractionCreated += HandleInteractionAsync;
