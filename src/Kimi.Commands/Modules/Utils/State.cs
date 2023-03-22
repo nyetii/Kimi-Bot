@@ -8,8 +8,6 @@ namespace Kimi.Commands.Modules.Utils
 {
     public class State : ModuleBase<SocketCommandContext>
     {
-        
-
         [RequireOwner]
         [Command("shutdown")]
         public async Task Shutdown()

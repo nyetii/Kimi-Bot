@@ -31,35 +31,5 @@ namespace Kimi.Services.Core
 
             return settings;
         }
-
-        //public static async Task LoadTweets()
-        //{
-        //    try
-        //    {
-        //        using (var sr = new StreamReader(@$"{Info.AppDataPath}\modules\monark\monark.tweets"))
-        //        {
-        //            JsonSerializer serializer = new ();
-        //            Monark = serializer.Deserialize(sr, typeof());
-        //        }
-
-        //        Monark = JsonConvert.DeserializeObject<Root>(path);
-
-        //        if (Monark != null)
-        //            foreach (var bulk in Monark.bulk)
-        //            {
-        //                foreach (var data in bulk.data)
-        //                {
-        //                    TweetData.Add(data);
-        //                }
-        //            }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        await Log.Write(ex.ToString(), Severity.Fatal);
-        //        Environment.Exit(1);
-        //    }
-
-        //    await Task.CompletedTask;
-        //}
     }
 }

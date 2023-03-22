@@ -19,7 +19,7 @@ namespace Kimi.Services.Core
     {
         public string? Status { get; set; } = null;
         public string? Link { get; set; } = null;
-        public ActivityType ActivityType { get; set; } = (ActivityType)4;
+        public ActivityType ActivityType { get; set; } = 0;
         public UserStatus UserStatus { get; set; } = (UserStatus)1;
     }
 }

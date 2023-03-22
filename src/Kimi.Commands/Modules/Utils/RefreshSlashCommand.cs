@@ -27,8 +27,11 @@ namespace Kimi.Commands.Modules.Utils
         {
             try
             {
-                if(_guildId != null)
-                    await _slash.RegisterCommandsToGuildAsync((ulong)_guildId[0]);
+                if (Info.IsDebug && _guildId != null)
+                    foreach (var guild in _guildId)
+                        await _slash.RegisterCommandsToGuildAsync(guild, true);
+                else
+                    await _slash.RegisterCommandsGloballyAsync();
                 await Log.Write($"updated!");
                 await ReplyAsync($"updated!");
             }

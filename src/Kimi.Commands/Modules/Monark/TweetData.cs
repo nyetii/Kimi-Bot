@@ -21,8 +21,7 @@ namespace Kimi.Commands.Modules.Monark
             var rng = new Random();
 
             var n = rng.Next(0, text.Count());
-
-            // p1 = TweetData[n].text.ToString().Split(',', '.');
+            
             string[] p1 = Regex.Replace(text[n], @"http[^\s]+", "").Split(',', '.');
             n = rng.Next(text.Count());
             string[] p2 = Regex.Replace(text[n], @"http[^\s]+", "").Split(',', '.');

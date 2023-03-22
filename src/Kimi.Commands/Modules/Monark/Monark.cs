@@ -3,6 +3,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Kimi.GPT2;
+using Kimi.Logging;
 using Kimi.Services.Commands;
 using Kimi.Services.Commands.Interfaces;
 using Kimi.Services.Core;
@@ -13,19 +14,6 @@ namespace Kimi.Commands.Modules.Monark
     public partial class Monark : InteractionModuleBase<SocketInteractionContext>
     {
         private static readonly Random Rng = new Random();
-
-        public async Task HandleSubCommands(SocketSlashCommand command)
-        {
-            _ = command.Data.Options.First().Name switch
-            {
-                //"count" => MonarkCount(),
-                "generate" => MonarkGenerate(),
-                //"force" => MonarkForce(),
-                _ => MonarkGenerate()
-            };
-
-            await Task.CompletedTask;
-        }
 
         [SlashCommand("test", "TESTE")]
         public async Task HandleTestCommand() => await RespondAsync("TEST");
@@ -38,16 +26,10 @@ namespace Kimi.Commands.Modules.Monark
         {
             try
             {
-                bool isEnabled = await Model.IsReady();
-                //await command.DeferAsync();
                 await DeferAsync();
+                bool isEnabled = await Model.IsReady();
 
                 Cache cache = new();
-                //ICommandQuery context = new ContextCommandData(command);
-                
-                //var legacyMode = (bool?)await context.GetValue("legacy-mode");
-                //var legacyMode = command.Data.Options.First(x => x.Name == "generate").Options.FirstOrDefault().Value;
-                //legacyMode ??= false;
 
                 if (Cache.Count == 0)
                     await FollowupAsync(text: await cache.NewCache());
@@ -62,31 +44,22 @@ namespace Kimi.Commands.Modules.Monark
                 }
                 else
                     await FollowupAsync(text: $"https://twitter.com/monark" +
-                                                      //$"/status/{Rng.NextInt64(1000000000000000000, Int64.MaxValue)}/",
                                                       $"/status/{Context.Interaction.Id}/",
                         embed: await TweetEmbed(await TweetData.GetTweet()));
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                await Log.Write(ex.ToString(), Severity.Error);
             }
         }
 
         [SlashCommand("force", "Gerar um tweet")]
-        public async Task MonarkForce(string? tweet, Attachment? image = null, Attachment? avatar = null, string? username = null, string? nickname = null)
+        public async Task MonarkForce(string tweet, Attachment? image = null, Attachment? avatar = null, string? username = null, string? nickname = null)
         {
             try
             {
-                //ICommandQuery context = new ContextCommandData(command);
-
-                //var tweet = (string?)await context.GetValue("tweet");
-                //var image = (Attachment?)await context.GetValue("image");
-                //var avatar = (Attachment?)await context.GetValue("avatar");
-                //var username = (string?)await context.GetValue("username");
-                //var nickname = (string?)await context.GetValue("nickname");
-
                 await RespondAsync(text: $"https://twitter.com/{(username != null ? WhiteSpacesRegex().Replace(username, "").ToLowerInvariant() : "monark")}" +
-                                                 $"/status/{Rng.NextInt64(1000000000000000000, Int64.MaxValue)}/",
+                                         $"/status/{Context.Interaction.Id}/",
                     embed: await TweetEmbed(tweet, image, avatar, username, nickname));
             }
             catch (Exception ex) { await RespondAsync(ex.ToString()); }

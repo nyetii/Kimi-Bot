@@ -7,14 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Serilog;
-using Serilog.Formatting;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Xml.Schema;
 using Kimi.Commands;
-using Kimi.Commands.Modules.Utils;
 using Kimi.GPT2;
 using Kimi.Logging;
 using Kimi.Services.Core;
@@ -33,11 +30,9 @@ namespace Kimi.Core
         {
             Debug.Assert(Info.IsDebug = true);
 
-            
+            Console.Title = Info.IsDebug ? "Kimi [DEBUG]" : "Kimi";
 
             var config = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appconfig.json")
                 .Build();
 
             using IHost host = Host.CreateDefaultBuilder()
@@ -65,21 +60,17 @@ namespace Kimi.Core
             using IServiceScope serviceScope = host.Services.CreateScope();
             IServiceProvider provider = serviceScope.ServiceProvider;
 
-            await provider.GetRequiredService<LoggerService>().LoggerConfiguration(Environment.CurrentDirectory);
+            await provider.GetRequiredService<LoggerService>().LoggerConfiguration(Info.AppDataPath);
 
             var _client = provider.GetRequiredService<DiscordSocketClient>();
             var sCommands = provider.GetRequiredService<InteractionService>();
 
             var settings = provider.GetRequiredService<Settings>();
 
-            var genSettings = settings.General;
-
             await provider.GetRequiredService<CommandHandler>().InitializeSlashAsync();
             await provider.GetRequiredService<CommandHandler>().InitializePrefixAsync();
             _client.Log += Log.Write;
             sCommands.Log += Log.Write;
-
-            //SlashCommands slashCommands = new(_client);
 
             _client.Ready += async () =>
             {
@@ -89,48 +80,20 @@ namespace Kimi.Core
                 await _client.SetGameAsync(profile?.Status, profile?.Link, profile.ActivityType);
                 await _client.SetStatusAsync(profile.UserStatus);
 
-                await Log.Write(profile?.Status + profile?.ActivityType + profile?.UserStatus);
-
-                
-                if(settings.General.DebugGuildId != null)
-                    foreach (var guild in settings.General.DebugGuildId)
-                        await sCommands.RegisterCommandsToGuildAsync(guild, true);
-
                 var state = new Commands.Modules.Utils.CommandInfo(sCommands);
                 await Log.Write(await state.HandleSlashCommandsTable());
 
                 await Log.Write($"Logged in as <@{_client.CurrentUser.Username}#{_client.CurrentUser.Discriminator}>!");
+                await Log.Write($"{profile.UserStatus} - {profile.ActivityType} {profile.Status}");
             };
-            
 
-            await Cache.LoadCacheFile();
-
-            Cache cache = new();
-            cache.CacheUpdate += async (sender, args) =>
-            {
-                var a = args.GenerationCache.Count;
-
-                if(a > 3)
-                    await Log.Write($"Current cache size: {args.GenerationCache.Count}", Severity.Verbose);
-                else
-                    await Log.Write($"Current cache size: {args.GenerationCache.Count}", Severity.Warning);
-            };
-            
             await Model.IsReady();
-
-            //await .LoadTweets();
 
             await _client.LoginAsync(TokenType.Bot, Token.GetToken());
 
             await _client.StartAsync();
 
-            //_client.SlashCommandExecuted += slashCommands.SlashCommandHandler;
-
             await Task.Delay(-1);
-        }
-
-        public void Brasil(object sender, CacheArgs args)
-        {
         }
     }
 }

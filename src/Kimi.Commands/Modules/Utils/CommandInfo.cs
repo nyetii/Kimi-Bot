@@ -18,8 +18,7 @@ namespace Kimi.Commands.Modules.Utils
         {
             _slash = slash;
         }
-
-        [RequireOwner]
+        
         [Command("slashCommandsRegistered")]
         [Alias("sc", "scr")]
         public async Task SlashCommandsRegistered()
@@ -53,10 +52,5 @@ namespace Kimi.Commands.Modules.Utils
 
             return await Task.FromResult(Info.SlashCommandsTable);
         }
-    }
-
-    public class CommandInfoHandler
-    {
-        
     }
 }

@@ -72,18 +72,6 @@ namespace Kimi.Commands
             await _slash.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
             _client.InteractionCreated += HandleInteractionAsync;
             _slash.SlashCommandExecuted += SlashCommandExecuted;
-            ;
-            //_client.SlashCommandExecuted += async (command) =>
-            //{
-            //    _ = command.Data.Name switch
-            //    {
-
-            //        //"monark" => Monark.HandleSubCommands(command),
-            //        //"list-roles" => Modules.Placeholder.HandleListRoleCommand(command),
-            //        _ => Log.Write($"<{command.Data.Name}> - {new NotImplementedException()}", Severity.Error)
-            //    };
-            //    await Task.CompletedTask;
-            //};
         }
 
         private async Task HandleInteractionAsync(SocketInteraction arg)
@@ -99,7 +87,33 @@ namespace Kimi.Commands
             }
         }
 
-        private Task SlashCommandExecuted(SlashCommandInfo arg1, Discord.IInteractionContext arg2, IResult arg3) =>
-            Task.CompletedTask;
+        private async Task SlashCommandExecuted(SlashCommandInfo slash, Discord.IInteractionContext context, IResult result)
+        {
+            if (!result.IsSuccess)
+                switch (result.Error)
+                {
+                    case InteractionCommandError.UnmetPrecondition:
+                        await context.Interaction.RespondAsync($"Unmet Precondition: {result.ErrorReason}");
+                        break;
+                    case InteractionCommandError.UnknownCommand:
+                        await context.Interaction.RespondAsync("Unknown command");
+                        break;
+                    case InteractionCommandError.ConvertFailed:
+                        await context.Interaction.RespondAsync($"Convert Failed: {result.ErrorReason}");
+                        break;
+                    case InteractionCommandError.ParseFailed:
+                        await context.Interaction.RespondAsync($"Parse Failed {result.ErrorReason}");
+                        break;
+                    case InteractionCommandError.BadArgs:
+                        await context.Interaction.RespondAsync("Invalid arguments");
+                        break;
+                    case InteractionCommandError.Exception:
+                        await context.Interaction.RespondAsync($"Exception: {result.ErrorReason}");
+                        break;
+                    default:
+                        await context.Interaction.RespondAsync("Command could not be executed.");
+                        break;
+                }
+        }
     }
 }
