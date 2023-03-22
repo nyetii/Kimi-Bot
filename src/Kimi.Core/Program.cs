@@ -69,6 +69,7 @@ namespace Kimi.Core
 
             await provider.GetRequiredService<CommandHandler>().InitializeSlashAsync();
             await provider.GetRequiredService<CommandHandler>().InitializePrefixAsync();
+
             _client.Log += Log.Write;
             sCommands.Log += Log.Write;
 
