@@ -6,9 +6,16 @@ namespace Kimi.Commands.Modules.Generic
 {
     public class Generic : ModuleBase<SocketCommandContext>
     {
+        [Command("polyana")]
+        [Summary("Primeiro comando feito para o bot")]
+        public async Task HandlePolyanaCommand()
+        {
+            await Context.Message.ReplyAsync("https://media.discordapp.net/attachments/896243750228090974/952247379732619326/lobber.gif");
+        }
+
         [Command("monoana")]
         [Summary("Primeiro comando feito para o bot")]
-        public async Task HandlePingCommand()
+        public async Task HandleMonoanaCommand()
         {
             await Context.Message.ReplyAsync("https://media.discordapp.net/attachments/896243750228090974/952247379732619326/lobber.gif");
         }

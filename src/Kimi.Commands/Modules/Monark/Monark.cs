@@ -15,9 +15,6 @@ namespace Kimi.Commands.Modules.Monark
     {
         private static readonly Random Rng = new Random();
 
-        [SlashCommand("test", "TESTE")]
-        public async Task HandleTestCommand() => await RespondAsync("TEST");
-
         [SlashCommand("count", "Conta a quantidade de tweets do Monark")]
         public async Task HandleMonarkCountCommand() => await RespondAsync(TweetData.TData.Select(x => x?.text).Count().ToString());
 
