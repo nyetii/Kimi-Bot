@@ -50,7 +50,7 @@ namespace Kimi.Commands
         private async Task HandleCommandAsync(SocketMessage messageParam)
         {
             var message = messageParam as SocketUserMessage;
-            if (message == null) return;
+            if (message == null || message.Author.IsBot) return;
 
             int argPos = 0;
 

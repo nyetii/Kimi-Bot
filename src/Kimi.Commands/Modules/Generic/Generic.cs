@@ -39,5 +39,8 @@ namespace Kimi.Commands.Modules.Generic
         {
             await ReplyAsync($"{Context.Client.Latency}ms <:pacemike:841313592179163166>");
         }
+
+        [Command("say")]
+        public async Task HandleSayCommand([Remainder] string message) => await ReplyAsync(message);
     }
 }
