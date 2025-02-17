@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{25455087-10F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi", "src\Kimi\Kimi.csproj", "{CAB9F783-76CA-434D-9596-53969EDF0216}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi.Repository", "src\Kimi.Repository\Kimi.Repository.csproj", "{F70DFDA2-7680-44B4-8CA1-D675302F377E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,12 +19,17 @@ Global
 		{CAB9F783-76CA-434D-9596-53969EDF0216}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAB9F783-76CA-434D-9596-53969EDF0216}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAB9F783-76CA-434D-9596-53969EDF0216}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F70DFDA2-7680-44B4-8CA1-D675302F377E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F70DFDA2-7680-44B4-8CA1-D675302F377E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F70DFDA2-7680-44B4-8CA1-D675302F377E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F70DFDA2-7680-44B4-8CA1-D675302F377E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CAB9F783-76CA-434D-9596-53969EDF0216} = {25455087-10F3-4B72-B0D9-A901222551C5}
+		{F70DFDA2-7680-44B4-8CA1-D675302F377E} = {25455087-10F3-4B72-B0D9-A901222551C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2E35DD27-2CF9-4F3B-A476-F3A51C10FF94}

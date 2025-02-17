@@ -1,27 +1,20 @@
-using Discord;
-using Discord.WebSocket;
-using Kimi.Commands;
-using Kimi.Modules.Ranking;
-
 namespace Kimi;
 
 public class Worker : IHostedService
 {
     private readonly ILogger<Worker> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    private readonly string _token;
+    private readonly DiscordService _discord;
 
-    private readonly DiscordSocketClient _client;
-    private readonly CommandHandler _command;
-    private readonly RankingService _rankingService;
+    private readonly ulong[] _guilds;
 
-    public Worker(ILogger<Worker> logger, IConfiguration config, IServiceProvider provider)
+    public Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory, DiscordService discord, IConfiguration config)
     {
         _logger = logger;
-        _token = config.GetSection("Discord")["Token"] ?? throw new InvalidOperationException("Could not get token.");
-        _client = provider.GetRequiredService<DiscordSocketClient>();
-        _command = provider.GetRequiredService<CommandHandler>();
-        _rankingService = provider.GetRequiredService<RankingService>();
+        _scopeFactory = scopeFactory;
+        _discord = discord;
+        _guilds = config.GetSection("Kimi:Ranking:Guilds").Get<ulong[]>() ?? [];
     }
 
     protected async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -38,41 +31,13 @@ public class Worker : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _client.Log += OnLogEvent;
-
-        await _command.InitializeAsync();
-        await _rankingService.InitializeAsync();
-
-        _client.Ready += async () =>
-        {
-
-        };
-
-        await _client.LoginAsync(TokenType.Bot, _token);
-
-        await _client.StartAsync();
+        await _discord.StartAsync(cancellationToken);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _client.LogoutAsync();
+        await _discord.StopAsync(cancellationToken);
     }
 
-    private async Task OnLogEvent(LogMessage message)
-    {
-        var level = message.Severity switch
-        {
-            LogSeverity.Critical => LogLevel.Critical,
-            LogSeverity.Error => LogLevel.Error,
-            LogSeverity.Warning => LogLevel.Warning,
-            LogSeverity.Info => LogLevel.Information,
-            LogSeverity.Verbose => LogLevel.Trace,
-            LogSeverity.Debug => LogLevel.Debug,
-            _ => LogLevel.None
-        };
-
-        _logger.Log(level, message.Exception, message.Message);
-
-        await Task.CompletedTask;
-    }
+    
 }

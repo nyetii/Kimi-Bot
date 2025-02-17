@@ -61,12 +61,12 @@ public class CommandHandler
             };
 
             if (result.Error is CommandError.UnknownCommand)
-                _logger.LogTrace("{message}: Executed {command} by {user}.", 
-                    message.Replace(".", ""), context.Message.CleanContent, context.User.Username);
-            else
-                _logger.Log(result.Error is CommandError.Exception ? LogLevel.Error : LogLevel.Warning,
-                    "Command {module} > {command}: {message}",
-                    command.Value.Module.Group ?? command.Value.Module.Name, command.Value.Name, message);
+                return;
+
+
+            _logger.Log(result.Error is CommandError.Exception ? LogLevel.Error : LogLevel.Warning,
+                "Command {module} > {command}: {message}",
+                command.Value.Module.Group ?? command.Value.Module.Name, command.Value.Name, message);
 
             await context.Message.ReplyAsync(message);
             return;

@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using Discord.WebSocket;
 
 namespace Kimi.Modules.Ranking;
 

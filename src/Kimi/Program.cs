@@ -4,6 +4,9 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Kimi.Commands;
 using Kimi.Modules.Ranking;
+using Kimi.Repository;
+using Kimi.Repository.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Kimi;
@@ -25,16 +28,31 @@ public class Program
             GatewayIntents = GatewayIntents.All
         };
 
+        var interactionConfig = new InteractionServiceConfig
+        {
+        };
+
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(dispose: true);
 
+        builder.Services.AddDbContext<KimiDbContext>(options =>
+            options.UseSqlite(builder.Configuration["ConnectionStrings:Database"]));
+
+        builder.Services.AddScoped<GuildRepository>();
+        builder.Services.AddScoped<UserRepository>();
+
         builder.Services.AddSingleton(discordConfig);
         builder.Services.AddSingleton<DiscordSocketClient>();
-        //builder.Services.AddSingleton<InteractionService>();
         builder.Services.AddSingleton<CommandService>();
         builder.Services.AddSingleton<CommandHandler>();
+        builder.Services.AddSingleton(interactionConfig);
+        builder.Services.AddSingleton<InteractionService>(x =>
+            new InteractionService(x.GetRequiredService<DiscordSocketClient>().Rest));
+        builder.Services.AddSingleton<InteractionHandler>();
 
-        builder.Services.AddSingleton<RankingService>();
+        builder.Services.AddScoped<RankingService>();
+
+        builder.Services.AddSingleton<DiscordService>();
 
         builder.Services.AddHostedService<Worker>();
 
