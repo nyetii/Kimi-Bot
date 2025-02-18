@@ -6,8 +6,9 @@ using Kimi.Repository;
 using Kimi.Repository.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kimi.Commands;
+namespace Kimi.Commands.Meta;
 
+[Obsolete("Class will be rewritten.")]
 [RequireOwner]
 [Group("db")]
 public class Database : ModuleBase<SocketCommandContext>

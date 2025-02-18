@@ -46,22 +46,6 @@ public class GuildRepository
                         .FirstOrDefaultAsync(x => x.Id == guildId) ??
                     throw new Exception("Guild not found.");
 
-        // var dailyScoresByUser = guild.DailyScores.Join(guild.GuildUsers,
-        //         ds => ds.UserId, gu => gu.UserId, (ds, gu) =>
-        //             new
-        //             {
-        //                 ds.UserId,
-        //                 DailyScore = ds,
-        //                 GuildUser = gu
-        //             })
-        //     .GroupBy(x => x.UserId);
-        //
-        // foreach (var user in dailyScoresByUser)
-        // {
-        //     var score = user.Sum(x => x.DailyScore.Score);
-        //     
-        // }
-
         var dailyScoresByUser = guild.GuildUsers.Select(x => new
         {
             Id = x.UserId,
@@ -74,17 +58,12 @@ public class GuildRepository
         foreach (var user in dailyScoresByUser)
         {
             var score = (uint)user.DailyScores.Sum(x => x.Score);
-            var dto = new UserScoreDto(user.Id, user.Nickname, score);
+            var messageCount = (uint)user.DailyScores.Sum(x => x.MessageCount);
+            var dto = new UserScoreDto(user.Id, user.Nickname, score, messageCount);
             totalDailyScoresByUser.Add(dto);
         }
 
         return totalDailyScoresByUser.OrderByDescending(x => x.Score).ToImmutableList();
-        // var dailyScoresByUser = guild.DailyScores.GroupBy(x => x.UserId);
-        //
-        // foreach (var user in dailyScoresByUser)
-        // {
-        //     var score = guild.DailyScores.Where(x => x.Id == user.Key).Sum(x => x.Score);
-        // }
     }
 
     public async Task<bool> SaveAsync()

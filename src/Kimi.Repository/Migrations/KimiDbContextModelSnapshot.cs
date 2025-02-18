@@ -29,6 +29,9 @@ namespace Kimi.Repository.Migrations
                     b.Property<ulong>("GuildId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<uint>("MessageCount")
+                        .HasColumnType("INTEGER");
+
                     b.Property<uint>("Score")
                         .HasColumnType("INTEGER");
 
@@ -39,7 +42,8 @@ namespace Kimi.Repository.Migrations
 
                     b.HasIndex("GuildId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "GuildId", "Date")
+                        .IsUnique();
 
                     b.ToTable("DailyScores");
                 });
@@ -52,6 +56,7 @@ namespace Kimi.Repository.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -71,11 +76,15 @@ namespace Kimi.Repository.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Nickname")
+                        .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
                     b.HasKey("GuildId", "UserId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("GuildId", "UserId")
+                        .IsUnique();
 
                     b.ToTable("GuildUsers");
                 });
@@ -88,6 +97,7 @@ namespace Kimi.Repository.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
+                        .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

@@ -1,24 +1,31 @@
 ﻿using System.Text.RegularExpressions;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
+using Kimi.Extensions;
 using Kimi.Repository.Dtos;
 using Kimi.Repository.Repositories;
+using Microsoft.EntityFrameworkCore.Storage;
+using Serilog;
 
 namespace Kimi.Modules.Ranking;
 
 public class RankingService
 {
     private readonly ulong[] _enabledGuilds;
+    private readonly string[] _prefix;
 
     private readonly ILogger<RankingService> _logger;
 
     private readonly DiscordSocketClient _client;
-    
+
     private readonly UserRepository _userRepository;
 
-    public RankingService(ILogger<RankingService> logger, IConfiguration config, DiscordSocketClient client, UserRepository userRepository)
+    public RankingService(ILogger<RankingService> logger, IConfiguration config, DiscordSocketClient client,
+        UserRepository userRepository)
     {
         _enabledGuilds = config.GetSection("Kimi:Ranking:Guilds").Get<ulong[]>() ?? [];
+        _prefix = config.GetSection("Discord:Prefix").Get<string[]>() ?? [];
 
         _logger = logger;
         _client = client;
@@ -27,38 +34,31 @@ public class RankingService
 
     public async Task InitializeAsync()
     {
+        _client.GuildMemberUpdated += OnUserUpdated;
         _client.MessageReceived += OnMessageReceived;
-
-        // Task
-        //     .Run(async () =>
-        //     {
-        //         var timer = new PeriodicTimer(TimeSpan.FromMinutes(10));
-        //
-        //         while (await timer.WaitForNextTickAsync())
-        //         {
-        //             await _dbContext.SaveChangesAsync();
-        //             _logger.LogDebug("Saved score.");
-        //         }
-        //     })
-        //     .ContinueWith(task =>
-        //     {
-        //         if (task is not { IsFaulted: true, Exception: not null })
-        //             return;
-        //
-        //         _logger.LogCritical(task.Exception, "Could not save score.");
-        //         throw task.Exception;
-        //     });
+        _client.MessageDeleted += OnMessageDeleted;
 
         await Task.CompletedTask;
     }
 
+    private async Task OnUserUpdated(Cacheable<SocketGuildUser, ulong> old, SocketGuildUser updated)
+    {
+        await _userRepository.UpdateNamesAsync(updated);
+    }
+
     private async Task OnMessageReceived(SocketMessage socketMessage)
     {
-        if (socketMessage is not SocketUserMessage { Channel: SocketGuildChannel channel } message || socketMessage.Author.IsBot)
+        if (socketMessage is not SocketUserMessage { Channel: SocketGuildChannel channel } message
+            || socketMessage.Author.IsBot)
             return;
 
         if (_enabledGuilds.All(x => x != channel.Guild.Id))
             return;
+
+        if (message.HasStringPrefix(_prefix) || message.HasMentionPrefix(_client.CurrentUser))
+            return;
+
+        var transaction = await _userRepository.BeginTransactionAsync();
 
         try
         {
@@ -68,75 +68,13 @@ public class RankingService
 
             var messageDto = new MessageDto(message);
 
-            var transaction = await _userRepository.BeginTransactionAsync();
-            
-            var user = await _userRepository.GetOrCreateAsync(messageDto);
+            await _userRepository.GetOrCreateAsync(messageDto);
 
             await _userRepository.IncrementScoreAsync(messageDto, score);
-            
+
             await _userRepository.UpdateLastMessageAsync(messageDto);
 
             await _userRepository.CommitAsync(transaction);
-
-            // var daily = await _dbContext.DailyScores
-            //     .Include(x => x.Guild)
-            //     .Include(x => x.User)
-            //     .ThenInclude(x => x.GuildsUsers)
-            //     .Where(x => x.UserId == socketMessage.Author.Id
-            //                 && x.GuildId == channel.Guild.Id)
-            //     .FirstOrDefaultAsync(x => x.Date == DateOnly.FromDateTime(DateTime.Now));
-            //
-            // if (daily is null)
-            // {
-            //     daily = new DailyScore
-            //     {
-            //         Date = DateOnly.FromDateTime(DateTime.Now),
-            //         GuildId = channel.Guild.Id,
-            //         UserId = message.Author.Id,
-            //         Score = (uint)score
-            //     };
-            //
-            //     var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == message.Author.Id);
-            //
-            //     if (user is null)
-            //     {
-            //         user = new User
-            //         {
-            //             Id = message.Author.Id,
-            //             Username = message.Author.Username,
-            //             Guilds = [],
-            //             DailyScores = [],
-            //         };
-            //
-            //         var nickname = channel.Guild.Users.FirstOrDefault(x => x.Id == message.Author.Id)?.Nickname;
-            //
-            //         var guild = await _dbContext.Guilds.FirstAsync(x => x.Id == channel.Guild.Id);
-            //         user.Guilds.Add(guild);
-            //         user.GuildsUsers.Add(new GuildUser
-            //         {
-            //             GuildId = guild.Id,
-            //             UserId = user.Id,
-            //             Nickname = nickname
-            //         });
-            //
-            //         await _dbContext.Users.AddAsync(user);
-            //     }
-            //     daily.User = user;
-            //
-            //     daily.User.DailyScores.Add(daily);
-            //
-            //     await _dbContext.DailyScores.AddAsync(daily);
-            // }
-            // else
-            // {
-            //     daily.Score += (uint)score;
-            //     _dbContext.DailyScores.Update(daily);
-            // }
-            //
-            // var userInfo = daily.User.GetGuildUserInfo(channel.Guild.Id);
-            // userInfo.LastMessage = message.Timestamp.DateTime;
-            //
-            // _dbContext.GuildUsers.Update(userInfo);
         }
         catch (Exception ex)
         {
@@ -149,6 +87,55 @@ public class RankingService
                 await sw.FlushAsync();
                 await netty.SendFileAsync(sw.BaseStream, "exception.txt", "CATÁSTROFE");
             }
+
+            await transaction.RollbackAsync();
+            await transaction.DisposeAsync();
+
+            throw;
+        }
+    }
+
+    private async Task OnMessageDeleted(Cacheable<IMessage, ulong> cachedMessage,
+        Cacheable<IMessageChannel, ulong> cachedChannel)
+    {
+        if (cachedMessage.Value is not SocketUserMessage { Channel: SocketGuildChannel channel } message
+            || cachedMessage.Value.Author.IsBot)
+            return;
+
+        if (_enabledGuilds.All(x => x != channel.Guild.Id))
+            return;
+
+        if (message.HasStringPrefix(_prefix) || message.HasMentionPrefix(_client.CurrentUser))
+            return;
+
+        var transaction = await _userRepository.BeginTransactionAsync();
+
+        try
+        {
+            var score = CalculateScore(message);
+
+            _logger.LogDebug("[{user}] {message} - {score}", message.Author.Username, message.CleanContent, score);
+
+            var messageDto = new MessageDto(message);
+
+            await _userRepository.DecrementScoreAsync(messageDto, score);
+
+            await _userRepository.CommitAsync(transaction);
+        }
+        catch (Exception ex)
+        {
+            var netty = await _client.GetUserAsync(191604848423075840);
+
+            if (netty is not null)
+            {
+                await using var sw = new StreamWriter(new MemoryStream());
+                await sw.WriteLineAsync(ex.ToString());
+                await sw.FlushAsync();
+                await netty.SendFileAsync(sw.BaseStream, "exception.txt", "CATÁSTROFE");
+            }
+
+            await transaction.RollbackAsync();
+            await transaction.DisposeAsync();
 
             throw;
         }
@@ -198,7 +185,10 @@ public class RankingService
 
         if (string.IsNullOrWhiteSpace(message.CleanContent) && message.Attachments.Any(x =>
                 x.ContentType.Contains("image/") || x.ContentType.Contains("video/")))
-            return attachmentsFactor == 0 ? (uint)(message.Attachments.Count - Math.Log10(message.Attachments.Count) * 2) : 0;
+            return attachmentsFactor > 4
+                ? (uint)(message.Attachments.Count - Math.Log10(message.Attachments.Count) *
+                    (message.Attachments.Count / 2.0))
+                : (uint)attachmentsFactor;
 
         return (uint)(message.CleanContent.Length > 15
             ? (uint)Math.Log2(message.CleanContent.Length) + attachmentsFactor

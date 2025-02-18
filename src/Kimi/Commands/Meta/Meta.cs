@@ -2,7 +2,7 @@
 using Discord.Commands;
 using InteractionService = Discord.Interactions.InteractionService;
 
-namespace Kimi.Commands;
+namespace Kimi.Commands.Meta;
 
 [RequireOwner]
 [Group("meta")]
@@ -15,7 +15,7 @@ public class Meta : ModuleBase<SocketCommandContext>
         _interaction = interaction;
     }
 
-    [Command("register")]
+    [Command("refresh")]
     public async Task RefreshSlashCommands()
     {
         var commands = await _interaction.RegisterCommandsToGuildAsync(Context.Guild.Id);
@@ -29,9 +29,6 @@ public class Meta : ModuleBase<SocketCommandContext>
                 commandsStr.AppendLine($"1. **{command.Name}** - {command.Description}");
         }
 
-        await ReplyAsync(commands.Count is 0
-            ? "No new commands were added."
-            : $"Added the following commands to the server:\n" +
-              $"{commandsStr}");
+        await ReplyAsync($"These are the currently active commands on this server:\n{commandsStr}");
     }
 }

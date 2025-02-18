@@ -17,7 +17,7 @@ namespace Kimi.Repository.Migrations
                 {
                     Id = table.Column<ulong>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -30,7 +30,7 @@ namespace Kimi.Repository.Migrations
                 {
                     Id = table.Column<ulong>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Username = table.Column<string>(type: "TEXT", nullable: false)
+                    Username = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,7 +46,8 @@ namespace Kimi.Repository.Migrations
                     UserId = table.Column<ulong>(type: "INTEGER", nullable: false),
                     GuildId = table.Column<ulong>(type: "INTEGER", nullable: false),
                     Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    Score = table.Column<uint>(type: "INTEGER", nullable: false)
+                    Score = table.Column<uint>(type: "INTEGER", nullable: false),
+                    MessageCount = table.Column<uint>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -71,7 +72,7 @@ namespace Kimi.Repository.Migrations
                 {
                     GuildId = table.Column<ulong>(type: "INTEGER", nullable: false),
                     UserId = table.Column<ulong>(type: "INTEGER", nullable: false),
-                    Nickname = table.Column<string>(type: "TEXT", nullable: true),
+                    Nickname = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
                     LastMessage = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -97,9 +98,16 @@ namespace Kimi.Repository.Migrations
                 column: "GuildId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DailyScores_UserId",
+                name: "IX_DailyScores_UserId_GuildId_Date",
                 table: "DailyScores",
-                column: "UserId");
+                columns: new[] { "UserId", "GuildId", "Date" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GuildUsers_GuildId_UserId",
+                table: "GuildUsers",
+                columns: new[] { "GuildId", "UserId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_GuildUsers_UserId",

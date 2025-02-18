@@ -6,11 +6,13 @@ namespace Kimi.Repository.Models;
 public class User
 {
     [Key]
-    public ulong Id { get; set; }
+    public ulong Id { get; init; }
+    
+    [MaxLength(32)]
     public string Username { get; set; } = "unknown";
-    public ICollection<Guild> Guilds { get; set; } = [];
-    public ICollection<GuildUser> GuildsUsers { get; set; } = [];
-    public ICollection<DailyScore> DailyScores { get; set; } = [];
+    public ICollection<Guild> Guilds { get; init; } = [];
+    public ICollection<GuildUser> GuildsUsers { get; init; } = [];
+    public ICollection<DailyScore> DailyScores { get; init; } = [];
 
     public GuildUser GetGuildUserInfo(ulong guildId)
         => GuildsUsers.First(x => x.GuildId == guildId);
