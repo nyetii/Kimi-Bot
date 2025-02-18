@@ -17,29 +17,66 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
         _guildRepository = provider.CreateScope().ServiceProvider.GetRequiredService<GuildRepository>();
     }
 
+    #region Commands
+
     [SlashCommand("top", "Lists the top 10 users by score")]
-    public async Task ListLeaderboard(
-        [Summary(description: "Selects page - eg. page 3 for the 21st to 30th place")] [MinValue(1)] int page = 1,
+    public async Task RankingTopCommand(
+        [Summary(description: "Selects page - eg. page 3 for the 21st to 30th place")] [MinValue(1)]
+        int page = 1,
         [Summary(description: "The response will only be visible to you")]
         bool ephemeral = false)
     {
         page--;
 
+        await DeferAsync(ephemeral);
+
+        var result = await HandleLeaderboardAsync(page);
+
+        if (result.Embed is null)
+        {
+            await FollowupAsync("This page doesn't exist.");
+            return;
+        }
+
+        await FollowupAsync(embed: result.Embed, components: result.Component, ephemeral: ephemeral);
+    }
+
+    [ComponentInteraction("paging:*")]
+    public async Task RankingTopPagingButton(int page)
+    {
+        await DeferAsync();
+
+        var result = await HandleLeaderboardAsync(page);
+
+        if (result.Embed is null)
+        {
+            await DeleteOriginalResponseAsync();
+            await FollowupAsync("This page doesn't exist.");
+            return;
+        }
+
+        await ModifyOriginalResponseAsync(x =>
+        {
+            x.Embed = result.Embed;
+            x.Components = result.Component;
+        });
+    }
+
+    #endregion
+
+    #region Handling
+
+    private async Task<(Embed? Embed, MessageComponent? Component)> HandleLeaderboardAsync(int page)
+    {
         var totalScores = await _guildRepository.GetAllTotalScoresAsync(Context.Guild.Id);
 
         var scores = totalScores.Skip(page * 10).Take(10).ToList();
 
         if (scores.Count is 0)
-        {
-            await RespondAsync("This page doesn't exist.");
-            return;
-        }
+            scores = totalScores.TakeLast(10).ToList();
 
-        var str = "";
-        foreach (var score in scores)
-        {
-            str += $"1. {score.Nickname} - {score.Score}\n";
-        }
+        if (scores.Count is 0)
+            return (null, null);
 
         var callerIndex = totalScores.FindIndex(x => x.UserId == Context.User.Id) + 1;
 
@@ -53,7 +90,7 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
         var embedBuilder = new EmbedBuilder();
 
         embedBuilder
-            .WithColor(229, 168, 224)
+            .WithColor(243, 197, 199)
             .WithAuthor("All time", Context.Guild.IconUrl)
             .WithTitle($"{Context.Guild.Name} leaderboard")
             .WithDescription($"You're on the **{GetOrdinalString(callerIndex)} place**.");
@@ -74,7 +111,20 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
 
         var embed = embedBuilder.Build();
 
-        await RespondAsync(embed: embed, ephemeral: ephemeral);
+        var componentBuilder = new ComponentBuilder();
+
+        if (page is not 0)
+            componentBuilder
+                .WithButton($"Page {page}", style: ButtonStyle.Secondary, customId: $"ranking.paging:{page - 1}");
+
+        if (page * 10 > totalScores.Count)
+            componentBuilder
+                .WithButton($"Page {page + 2}", style: ButtonStyle.Secondary, customId: $"ranking.paging:{page + 1}");
+
+        componentBuilder.WithButton(" ", style: ButtonStyle.Secondary, customId: $"ranking.paging:{page + 2}",
+            emote: Emote.Parse("<:nazubeans:783328274193448981>"));
+
+        return (embed, componentBuilder.Build());
     }
 
     private string BuildPositions(string[] names, int page = 0)
@@ -133,4 +183,6 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
             }
         };
     }
+
+    #endregion
 }

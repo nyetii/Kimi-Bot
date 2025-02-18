@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Reflection;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
@@ -30,6 +32,9 @@ public class Program
 
         var interactionConfig = new InteractionServiceConfig
         {
+            LocalizationManager = new ResxLocalizationManager("Kimi.Resources.Commands", Assembly.GetEntryAssembly(),
+                new CultureInfo("en-US"), new CultureInfo("pt-BR")),
+            InteractionCustomIdDelimiters = ['.']
         };
 
         builder.Logging.ClearProviders();
@@ -47,7 +52,7 @@ public class Program
         builder.Services.AddSingleton<CommandHandler>();
         builder.Services.AddSingleton(interactionConfig);
         builder.Services.AddSingleton<InteractionService>(x =>
-            new InteractionService(x.GetRequiredService<DiscordSocketClient>().Rest));
+            new InteractionService(x.GetRequiredService<DiscordSocketClient>().Rest, interactionConfig));
         builder.Services.AddSingleton<InteractionHandler>();
 
         builder.Services.AddScoped<RankingService>();

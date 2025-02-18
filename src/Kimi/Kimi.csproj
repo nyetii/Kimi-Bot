@@ -30,4 +30,28 @@
       <DependentUpon>appsettings.json</DependentUpon>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Commands.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Commands.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Commands.pt-BR.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Commands.pt-BR.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\Commands.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Commands.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\Commands.pt-BR.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Commands.pt-BR.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
