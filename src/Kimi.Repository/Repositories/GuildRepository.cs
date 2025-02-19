@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using Kimi.Repository.Dtos;
+﻿using Kimi.Repository.Dtos;
 using Kimi.Repository.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -35,7 +34,7 @@ public class GuildRepository
         return guild;
     }
 
-    public async Task<ImmutableList<UserScoreDto>> GetAllTotalScoresAsync(ulong guildId)
+    public async Task<List<UserScoreDto>> GetAllTotalScoresAsync(ulong guildId)
     {
         var guild = await _dbContext.Guilds
                         .Include(x => x.GuildUsers)
@@ -43,8 +42,8 @@ public class GuildRepository
                         .Include(x => x.DailyScores)
                         .AsSplitQuery()
                         .AsNoTracking()
-                        .FirstOrDefaultAsync(x => x.Id == guildId) ??
-                    throw new Exception("Guild not found.");
+                        .FirstOrDefaultAsync(x => x.Id == guildId)
+                    ?? throw new Exception("Guild not found.");
 
         var dailyScoresByUser = guild.GuildUsers.Select(x => new
         {
@@ -52,7 +51,7 @@ public class GuildRepository
             Nickname = x.Nickname ?? x.User.Username,
             DailyScores = guild.DailyScores.Where(ds => ds.UserId == x.UserId)
         });
-        
+
         var totalDailyScoresByUser = new List<UserScoreDto>();
 
         foreach (var user in dailyScoresByUser)
@@ -63,7 +62,41 @@ public class GuildRepository
             totalDailyScoresByUser.Add(dto);
         }
 
-        return totalDailyScoresByUser.OrderByDescending(x => x.Score).ToImmutableList();
+        return totalDailyScoresByUser.ToList();
+    }
+
+    public async Task<List<UserScoreDto>> GetTotalScoresByPeriodAsync(ulong guildId, PeriodDto period)
+    {
+        var guild = await _dbContext.Guilds
+                        .Include(x => x.GuildUsers)
+                        .ThenInclude(x => x.User)
+                        .Include(x => x.DailyScores
+                            .Where(ds =>
+                                ds.Date >= DateOnly.FromDateTime(period.Start)
+                                && ds.Date <= DateOnly.FromDateTime(period.End)))
+                        .AsSplitQuery()
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.Id == guildId)
+                    ?? throw new Exception("Guild not found.");
+
+        var dailyScoresByUser = guild.GuildUsers.Select(x => new
+        {
+            Id = x.UserId,
+            Nickname = x.Nickname ?? x.User.Username,
+            DailyScores = guild.DailyScores.Where(ds => ds.UserId == x.UserId)
+        });
+
+        var totalDailyScoresByUser = new List<UserScoreDto>();
+
+        foreach (var user in dailyScoresByUser)
+        {
+            var score = (uint)user.DailyScores.Sum(x => x.Score);
+            var messageCount = (uint)user.DailyScores.Sum(x => x.MessageCount);
+            var dto = new UserScoreDto(user.Id, user.Nickname, score, messageCount);
+            totalDailyScoresByUser.Add(dto);
+        }
+
+        return totalDailyScoresByUser.ToList();
     }
 
     public async Task<bool> SaveAsync()

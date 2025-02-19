@@ -23,6 +23,10 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
     public async Task RankingTopCommand(
         [Summary(description: "Selects page - eg. page 3 for the 21st to 30th place")] [MinValue(1)]
         int page = 1,
+        [Summary("order-by", description: "Selects what order to show (score or message count)")]
+        OrderType orderBy = OrderType.Score,
+        [Summary(description: "Selects the time period")]
+        PeriodType period = PeriodType.AllTime,
         [Summary(description: "The response will only be visible to you")]
         bool ephemeral = false)
     {
@@ -30,7 +34,7 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
 
         await DeferAsync(ephemeral);
 
-        var result = await HandleLeaderboardAsync(page);
+        var result = await HandleLeaderboardAsync(page, orderBy, new PeriodDto(period));
 
         if (result.Embed is null)
         {
@@ -41,12 +45,52 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
         await FollowupAsync(embed: result.Embed, components: result.Component, ephemeral: ephemeral);
     }
 
-    [ComponentInteraction("paging:*")]
-    public async Task RankingTopPagingButton(int page)
+    [SlashCommand("top-period", "Lists the top 10 users by score during a certain period")]
+    public async Task RankingTopPeriodCommand(
+        [Summary(description: "The starting date. Formatting: dd/mm/yyyy or yyyy/mm/dd")]
+        DateTime startDate,
+        [Summary(description: "The ending date. If no date is provided, today will be considered the ending date")]
+        DateTime? endDate = null,
+        [Summary(description: "Selects page - eg. page 3 for the 21st to 30th place")] [MinValue(1)]
+        int page = 1,
+        [Summary("order-by", description: "Selects what order to show (score or message count)")]
+        OrderType orderBy = OrderType.Score,
+        [Summary(description: "The response will only be visible to you")]
+        bool ephemeral = false)
+    {
+        page--;
+
+        await DeferAsync(ephemeral);
+
+
+        if (endDate < startDate)
+        {
+            await FollowupAsync("Invalid date range, the starting date provided is greater than the ending date.");
+            return;
+        }
+
+        var result = await HandleLeaderboardAsync(page, orderBy,
+            new PeriodDto(startDate, endDate ?? DateTime.UtcNow.Date));
+
+        if (result.Embed is null)
+        {
+            await FollowupAsync("This page doesn't exist.");
+            return;
+        }
+
+        await FollowupAsync(embed: result.Embed, components: result.Component, ephemeral: ephemeral);
+    }
+
+    [ComponentInteraction("paging:*,*,*,*,*")]
+    public async Task RankingTopPagingButton(int page, OrderType order, DateTime start, DateTime end, PeriodType type)
     {
         await DeferAsync();
 
-        var result = await HandleLeaderboardAsync(page);
+        var period = end == DateTime.MinValue
+            ? new PeriodDto(type)
+            : new PeriodDto(start, end, type);
+
+        var result = await HandleLeaderboardAsync(page, order, period);
 
         if (result.Embed is null)
         {
@@ -66,9 +110,23 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
 
     #region Handling
 
-    private async Task<(Embed? Embed, MessageComponent? Component)> HandleLeaderboardAsync(int page)
+    private async Task<(Embed? Embed, MessageComponent? Component)> HandleLeaderboardAsync(int page, OrderType order,
+        PeriodDto? period)
     {
-        var totalScores = await _guildRepository.GetAllTotalScoresAsync(Context.Guild.Id);
+        var totalScores = period is null
+            ? await _guildRepository.GetAllTotalScoresAsync(Context.Guild.Id)
+            : await _guildRepository.GetTotalScoresByPeriodAsync(Context.Guild.Id, period);
+
+        if (order is OrderType.MessageCount)
+            totalScores = totalScores
+                .OrderByDescending(x => x.MessageCount)
+                .ThenByDescending(x => x.Score)
+                .ToList();
+        else
+            totalScores = totalScores
+                .OrderByDescending(x => x.Score)
+                .ThenByDescending(x => x.MessageCount)
+                .ToList();
 
         var scores = totalScores.Skip(page * 10).Take(10).ToList();
 
@@ -91,13 +149,15 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
 
         embedBuilder
             .WithColor(243, 197, 199)
-            .WithAuthor("All time", Context.Guild.IconUrl)
+            .WithAuthor(period?.ToString() ?? "All time", Context.Guild.IconUrl)
             .WithTitle($"{Context.Guild.Name} leaderboard")
             .WithDescription($"You're on the **{GetOrdinalString(callerIndex)} place**.");
 
         embedBuilder.AddField("Position", BuildPositions(scoreboard.Names, page), true);
-        embedBuilder.AddField("Score", BuildScores(scoreboard.Scores), true);
-        embedBuilder.AddField("Messages", BuildTotalMessages(scoreboard.MessageCounts), true);
+        embedBuilder.AddField($"{(order is not OrderType.MessageCount ? "\u25bc" : "")} Score",
+            BuildScores(scoreboard.Scores), true);
+        embedBuilder.AddField($"{(order is OrderType.MessageCount ? "\u25bc" : "")} Messages",
+            BuildTotalMessages(scoreboard.MessageCounts), true);
 
         var lastPosition = (page + 1) * 10 > totalScores.Count
             ? totalScores.Count
@@ -112,17 +172,54 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
         var embed = embedBuilder.Build();
 
         var componentBuilder = new ComponentBuilder();
+        var topRow = new ActionRowBuilder();
+        var bottomRow = new ActionRowBuilder();
 
         if (page is not 0)
-            componentBuilder
-                .WithButton($"Page {page}", style: ButtonStyle.Secondary, customId: $"ranking.paging:{page - 1}");
+            bottomRow
+                .WithButton($" ", style: ButtonStyle.Secondary, emote: Emoji.Parse(":arrow_left:"),
+                    customId: $"ranking.paging:{page - 1},{order},{period?.Start},{period?.End},{period?.Type}");
 
-        if (page * 10 > totalScores.Count)
-            componentBuilder
-                .WithButton($"Page {page + 2}", style: ButtonStyle.Secondary, customId: $"ranking.paging:{page + 1}");
+        if (page * 10 + 10 < totalScores.Count && totalScores.Count > 10)
+            bottomRow
+                .WithButton($" ", style: ButtonStyle.Secondary, emote: Emoji.Parse(":arrow_right:"),
+                    customId: $"ranking.paging:{page + 1},{order},{period?.Start},{period?.End},{period?.Type}");
 
-        componentBuilder.WithButton(" ", style: ButtonStyle.Secondary, customId: $"ranking.paging:{page + 2}",
-            emote: Emote.Parse("<:nazubeans:783328274193448981>"));
+        bottomRow.WithButton(order is OrderType.MessageCount ? "Order by score" : "Order by messages",
+            style: ButtonStyle.Secondary,
+            customId:
+            $"ranking.paging:{page},{
+                (order is OrderType.MessageCount
+                    ? OrderType.Score
+                    : OrderType.MessageCount)
+            },{period?.Start},{period?.End},{period?.Type}",
+            emote: Emoji.Parse(":arrow_down_small:"), disabled: false);
+
+        if (period?.Type is not PeriodType.Specific)
+        {
+            topRow.WithButton(" ", style: ButtonStyle.Secondary,
+                customId: $"ranking.paging:{page},{order},{DateTime.MinValue},{DateTime.MinValue},{PeriodType.Daily}",
+                emote: Emoji.Parse(":regional_indicator_d:"), disabled: period?.Type == PeriodType.Daily);
+
+            topRow.WithButton(" ", style: ButtonStyle.Secondary,
+                customId: $"ranking.paging:{page},{order},{DateTime.MinValue},{DateTime.MinValue},{PeriodType.Weekly}",
+                emote: Emoji.Parse(":regional_indicator_w:"), disabled: period?.Type == PeriodType.Weekly);
+
+            topRow.WithButton(" ", style: ButtonStyle.Secondary,
+                customId: $"ranking.paging:{page},{order},{DateTime.MinValue},{DateTime.MinValue},{PeriodType.Monthly}",
+                emote: Emoji.Parse(":regional_indicator_m:"), disabled: period?.Type == PeriodType.Monthly);
+
+            topRow.WithButton(" ", style: ButtonStyle.Secondary,
+                customId: $"ranking.paging:{page},{order},{DateTime.MinValue},{DateTime.MinValue},{PeriodType.Yearly}",
+                emote: Emoji.Parse(":regional_indicator_y:"), disabled: period?.Type == PeriodType.Yearly);
+
+            topRow.WithButton(" ", style: ButtonStyle.Secondary,
+                customId: $"ranking.paging:{page},{order},{DateTime.MinValue},{DateTime.MinValue},{PeriodType.AllTime}",
+                emote: Emoji.Parse(":regional_indicator_a:"), disabled: period?.Type == PeriodType.AllTime);
+        }
+
+        componentBuilder.AddRow(topRow);
+        componentBuilder.AddRow(bottomRow);
 
         return (embed, componentBuilder.Build());
     }
@@ -182,6 +279,16 @@ public class Ranking : InteractionModuleBase<SocketInteractionContext>
                 _ => $"{number}th"
             }
         };
+    }
+
+    #endregion
+
+    #region Types
+
+    public enum OrderType
+    {
+        Score,
+        [ChoiceDisplay("message-count")] MessageCount
     }
 
     #endregion

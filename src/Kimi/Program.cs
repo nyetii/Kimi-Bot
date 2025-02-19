@@ -27,13 +27,13 @@ public class Program
         {
             AlwaysDownloadUsers = true,
             MessageCacheSize = 100,
-            GatewayIntents = GatewayIntents.All
+            GatewayIntents = (GatewayIntents)53542591
         };
 
         var interactionConfig = new InteractionServiceConfig
         {
             LocalizationManager = new ResxLocalizationManager("Kimi.Resources.Commands", Assembly.GetEntryAssembly(),
-                new CultureInfo("en-US"), new CultureInfo("pt-BR")),
+                new CultureInfo("en-US"), new CultureInfo("en-GB"), new CultureInfo("pt-BR")),
             InteractionCustomIdDelimiters = ['.']
         };
 

@@ -48,7 +48,6 @@ public class DiscordService
 
         await _command.InitializeAsync();
         await _interaction.InitializeAsync();
-
         _client.Ready += OnReadyAsync;
     
         await _client.LoginAsync(TokenType.Bot, _token);

@@ -1,5 +1,4 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Kimi.Repository.Dtos;
 using Kimi.Repository.Models;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +28,9 @@ public class UserRepository
         if (message.Author is null)
             throw new Exception("Author is null.");
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == message.Author.Id);
+        var user = await _dbContext.Users
+            .Include(x => x.GuildsUsers)
+            .FirstOrDefaultAsync(x => x.Id == message.Author.Id);
 
         if (user is not null)
             return user;

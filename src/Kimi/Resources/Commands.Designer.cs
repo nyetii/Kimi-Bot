@@ -78,6 +78,42 @@ namespace Kimi.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Selects what order to show (score or message count).
+        /// </summary>
+        internal static string ranking_top_order_by_description {
+            get {
+                return ResourceManager.GetString("ranking.top.order-by.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total messages.
+        /// </summary>
+        internal static string ranking_top_order_by_message_count_name {
+            get {
+                return ResourceManager.GetString("ranking.top.order-by.message-count.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to order-by.
+        /// </summary>
+        internal static string ranking_top_order_by_name {
+            get {
+                return ResourceManager.GetString("ranking.top.order-by.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Score.
+        /// </summary>
+        internal static string ranking_top_order_by_score_name {
+            get {
+                return ResourceManager.GetString("ranking.top.order-by.score.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Selects page - eg. page 3 for the 21st to 30th place.
         /// </summary>
         internal static string ranking_top_page_description {
@@ -92,6 +128,159 @@ namespace Kimi.Resources {
         internal static string ranking_top_page_name {
             get {
                 return ResourceManager.GetString("ranking.top.page.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All time.
+        /// </summary>
+        internal static string ranking_top_period_all_time_name {
+            get {
+                return ResourceManager.GetString("ranking.top.period.all-time.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Daily.
+        /// </summary>
+        internal static string ranking_top_period_daily_name {
+            get {
+                return ResourceManager.GetString("ranking.top.period.daily.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The ending date. If no date is provided, today will be considered the ending date.
+        /// </summary>
+        internal static string ranking_top_period_end_date_description {
+            get {
+                return ResourceManager.GetString("ranking.top-period.end-date.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to end-date.
+        /// </summary>
+        internal static string ranking_top_period_end_date_name {
+            get {
+                return ResourceManager.GetString("ranking.top-period.end-date.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The response will only be visible to you.
+        /// </summary>
+        internal static string ranking_top_period_ephemeral_description {
+            get {
+                return ResourceManager.GetString("ranking.top-period.ephemeral.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Monthly.
+        /// </summary>
+        internal static string ranking_top_period_monthly_name {
+            get {
+                return ResourceManager.GetString("ranking.top.period.monthly.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selects what order to show (score or message count).
+        /// </summary>
+        internal static string ranking_top_period_order_by_description {
+            get {
+                return ResourceManager.GetString("ranking.top-period.order-by.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total messages.
+        /// </summary>
+        internal static string ranking_top_period_order_by_message_count_name {
+            get {
+                return ResourceManager.GetString("ranking.top-period.order-by.message-count.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to order-by.
+        /// </summary>
+        internal static string ranking_top_period_order_by_name {
+            get {
+                return ResourceManager.GetString("ranking.top-period.order-by.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Score.
+        /// </summary>
+        internal static string ranking_top_period_order_by_score_name {
+            get {
+                return ResourceManager.GetString("ranking.top-period.order-by.score.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selects page - eg. page 3 for the 21st to 30th place.
+        /// </summary>
+        internal static string ranking_top_period_page_description {
+            get {
+                return ResourceManager.GetString("ranking.top-period.page.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to page.
+        /// </summary>
+        internal static string ranking_top_period_page_name {
+            get {
+                return ResourceManager.GetString("ranking.top-period.page.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The starting date. Formatting: dd/mm/yyyy OR yyyy/mm/dd.
+        /// </summary>
+        internal static string ranking_top_period_start_date_description {
+            get {
+                return ResourceManager.GetString("ranking.top-period.start-date.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to start-date.
+        /// </summary>
+        internal static string ranking_top_period_start_date_name {
+            get {
+                return ResourceManager.GetString("ranking.top-period.start-date.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Weekly.
+        /// </summary>
+        internal static string ranking_top_period_weekly_name {
+            get {
+                return ResourceManager.GetString("ranking.top.period.weekly.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yearly.
+        /// </summary>
+        internal static string ranking_top_period_yearly_name {
+            get {
+                return ResourceManager.GetString("ranking.top.period.yearly.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to YTD.
+        /// </summary>
+        internal static string ranking_top_period_ytd_name {
+            get {
+                return ResourceManager.GetString("ranking.top.period.ytd.name", resourceCulture);
             }
         }
     }

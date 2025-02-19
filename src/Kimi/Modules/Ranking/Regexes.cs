@@ -10,6 +10,6 @@ public static partial class Regexes
     [GeneratedRegex(@"(.)\1{2,}", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
     public static partial Regex RepetitionMatch();
 
-    [GeneratedRegex(@"<(?::\w+:|@!*&*|#)[0-9]+>", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    [GeneratedRegex(@"<(?::\w+:|!@*&*|#)[0-9]+>", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
     public static partial Regex EmoteMatch();
 }

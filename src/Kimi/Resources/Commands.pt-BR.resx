@@ -30,4 +30,79 @@
     <data name="ranking.top.ephemeral.description" xml:space="preserve">
         <value>A resposta somente será exibida para você</value>
     </data>
+    <data name="ranking.top.order-by.name" xml:space="preserve">
+        <value>ordem</value>
+    </data>
+    <data name="ranking.top.order-by.description" xml:space="preserve">
+        <value>Seleciona qual ordem deve mostrar (pontos ou mensagens)</value>
+    </data>
+    <data name="ranking.top.period.name" xml:space="preserve">
+        <value>periodo</value>
+    </data>
+    <data name="ranking.top.period.description" xml:space="preserve">
+        <value>Seleciona um período de tempo</value>
+    </data>
+    <data name="ranking.top.period.daily.name" xml:space="preserve">
+        <value>Dia</value>
+    </data>
+    <data name="ranking.top.period.weekly.name" xml:space="preserve">
+        <value>Semana</value>
+    </data>
+    <data name="ranking.top.period.monthly.name" xml:space="preserve">
+        <value>Mês</value>
+    </data>
+    <data name="ranking.top.period.yearly.name" xml:space="preserve">
+        <value>Ano</value>
+    </data>
+    <data name="ranking.top.period.all-time.name" xml:space="preserve">
+        <value>Sempre</value>
+    </data>
+    <data name="ranking.top.period.ytd.name" xml:space="preserve">
+        <value>Ano até agora</value>
+    </data>
+    <data name="ranking.top.order-by.score.name" xml:space="preserve">
+        <value>Pontuação</value>
+    </data>
+    <data name="ranking.top.order-by.message-count.name" xml:space="preserve">
+        <value>Total de mensagens</value>
+    </data>
+    <data name="ranking.top-period.order-by.description" xml:space="preserve">
+        <value>Seleciona qual ordem deve mostrar (pontos ou mensagens)</value>
+    </data>
+    <data name="ranking.top-period.order-by.message-count.name" xml:space="preserve">
+        <value>Total de mensagens</value>
+    </data>
+    <data name="ranking.top-period.order-by.name" xml:space="preserve">
+        <value>ordem</value>
+    </data>
+    <data name="ranking.top-period.order-by.score.name" xml:space="preserve">
+        <value>Pontuação</value>
+    </data>
+    <data name="ranking.top-period.name" xml:space="preserve">
+        <value>top-periodo</value>
+    </data>
+    <data name="ranking.top-period.description" xml:space="preserve">
+        <value>Lista o top 10 de membros por pontuação durante certo período.</value>
+    </data>
+    <data name="ranking.top-period.page.name" xml:space="preserve">
+        <value>pagina</value>
+    </data>
+    <data name="ranking.top-period.page.description" xml:space="preserve">
+        <value>Seleciona a página - ex. página 3 para a 21ª à 30ª posição</value>
+    </data>
+    <data name="ranking.top-period.ephemeral.description" xml:space="preserve">
+        <value>A resposta somente será exibida para você</value>
+    </data>
+    <data name="ranking.top-period.start-date.name" xml:space="preserve">
+        <value>data-inicial</value>
+    </data>
+    <data name="ranking.top-period.end-date.name" xml:space="preserve">
+        <value>data-final</value>
+    </data>
+    <data name="ranking.top-period.start-date.description" xml:space="preserve">
+        <value>A data inicial. Formatação: dd/mm/yyyy OU yyyy/mm/dd</value>
+    </data>
+    <data name="ranking.top-period.end-date.description" xml:space="preserve">
+        <value>A data final. Se nenhuma data for providenciada, o dia de hoje será considerado</value>
+    </data>
 </root>

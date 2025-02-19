@@ -1,12 +1,10 @@
 ﻿using System.Text.RegularExpressions;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using Kimi.Extensions;
 using Kimi.Repository.Dtos;
+using Kimi.Repository.Models;
 using Kimi.Repository.Repositories;
-using Microsoft.EntityFrameworkCore.Storage;
-using Serilog;
 
 namespace Kimi.Modules.Ranking;
 
@@ -64,12 +62,15 @@ public class RankingService
         {
             var score = CalculateScore(message);
 
-            _logger.LogDebug("[{user}] {message} - {score}", message.Author.Username, message.CleanContent, score);
-
             var messageDto = new MessageDto(message);
+_logger.LogDebug("Score before deduction {score}", score);
+            var user = await _userRepository.GetOrCreateAsync(messageDto);
 
-            await _userRepository.GetOrCreateAsync(messageDto);
+            var guildUser = user.GetGuildUserInfo(channel.Guild.Id);
+            score = RetractTextSpamScore(guildUser, messageDto, score);
 
+            _logger.LogDebug("[{user}] {message} - {score}", message.Author.Username, message.CleanContent, score);
+            
             await _userRepository.IncrementScoreAsync(messageDto, score);
 
             await _userRepository.UpdateLastMessageAsync(messageDto);
@@ -213,5 +214,20 @@ public class RankingService
             : 0;
 
         return (uint)Math.Clamp(messageLength + attachmentsFactor - factor, 0, messageLength);
+    }
+
+    private uint RetractTextSpamScore(GuildUser user, MessageDto message, uint score)
+    {
+        if(user.LastMessage is null)
+            return score;
+
+        return message.DateTime.Subtract(user.LastMessage.Value).Seconds switch
+        {
+            < 2 => 0,
+            < 5 => score / 4,
+            < 10 => score / 3,
+            < 15 => score / 2,
+            _ => score
+        };
     }
 }
