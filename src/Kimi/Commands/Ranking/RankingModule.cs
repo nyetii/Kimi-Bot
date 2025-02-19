@@ -5,13 +5,14 @@ using Kimi.Repository.Repositories;
 
 namespace Kimi.Commands.Ranking;
 
+[DontAutoRegister]
 [Group("ranking", "Leaderboard commands")]
-public class Ranking : InteractionModuleBase<SocketInteractionContext>
+public class RankingModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly ILogger<Ranking> _logger;
+    private readonly ILogger<RankingModule> _logger;
     private readonly GuildRepository _guildRepository;
 
-    public Ranking(ILogger<Ranking> logger, IServiceProvider provider)
+    public RankingModule(ILogger<RankingModule> logger, IServiceProvider provider)
     {
         _logger = logger;
         _guildRepository = provider.CreateScope().ServiceProvider.GetRequiredService<GuildRepository>();

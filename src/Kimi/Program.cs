@@ -5,6 +5,7 @@ using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Kimi.Commands;
+using Kimi.Commands.Configuration;
 using Kimi.Modules.Ranking;
 using Kimi.Repository;
 using Kimi.Repository.Repositories;
@@ -22,6 +23,8 @@ public class Program
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(builder.Configuration)
             .CreateLogger();
+
+        builder.Services.Configure<KimiConfiguration>(builder.Configuration.GetSection("Kimi"));
 
         var discordConfig = new DiscordSocketConfig
         {

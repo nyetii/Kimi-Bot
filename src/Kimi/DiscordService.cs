@@ -1,9 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Kimi.Commands;
+using Kimi.Commands.Configuration;
 using Kimi.Modules.Ranking;
 using Kimi.Repository.Dtos;
 using Kimi.Repository.Repositories;
+using Microsoft.Extensions.Options;
 
 namespace Kimi;
 
@@ -19,14 +21,13 @@ public class DiscordService
 
     private readonly RankingService _rankingService;
 
-    private readonly UserRepository _userRepository;
     private readonly GuildRepository _guildRepository;
 
     private readonly ulong[] _guilds;
 
     public DiscordService(ILogger<DiscordService> logger, DiscordSocketClient client,
         CommandHandler command, InteractionHandler interaction, IServiceScopeFactory scopeFactory,
-        IConfiguration config)
+        IConfiguration config, IOptions<KimiConfiguration> options)
     {
         _logger = logger;
         _token = config["Discord:Token"] ?? throw new Exception("Token is missing.");
@@ -35,11 +36,10 @@ public class DiscordService
         _interaction = interaction;
 
         var scope = scopeFactory.CreateScope();
-        _userRepository = scope.ServiceProvider.GetRequiredService<UserRepository>();
         _guildRepository = scope.ServiceProvider.GetRequiredService<GuildRepository>();
         _rankingService = scope.ServiceProvider.GetRequiredService<RankingService>();
 
-        _guilds = config.GetSection("Kimi:Ranking:Guilds").Get<ulong[]>() ?? [];
+        _guilds = options.Value.Guilds.Select(x => x.Id).ToArray();
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)

@@ -2,6 +2,8 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Kimi.Commands.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Kimi.Commands;
 
@@ -15,9 +17,10 @@ public class CommandHandler
     private readonly CommandService _commandService;
     private readonly IServiceProvider _serviceProvider;
 
-    public CommandHandler(ILogger<CommandHandler> logger, DiscordSocketClient client, CommandService commandService, IConfiguration config, IServiceProvider serviceProvider)
+    public CommandHandler(ILogger<CommandHandler> logger, DiscordSocketClient client, CommandService commandService, IConfiguration config, IServiceProvider serviceProvider, IOptions<KimiConfiguration> options)
     {
-        _prefix = config.GetSection("Discord:Prefix").Get<string[]>() ?? [];
+        //_prefix = config.GetSection("Discord:Prefix").Get<string[]>() ?? [];
+        _prefix = options.Value.Prefixes;
 
         _logger = logger;
 

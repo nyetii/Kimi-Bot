@@ -1,17 +1,20 @@
 ﻿using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
+using Kimi.Commands.Configuration;
 using Kimi.Extensions;
 using Kimi.Repository.Dtos;
 using Kimi.Repository.Models;
 using Kimi.Repository.Repositories;
+using Microsoft.Extensions.Options;
 
 namespace Kimi.Modules.Ranking;
 
 public class RankingService
 {
-    private readonly ulong[] _enabledGuilds;
-    private readonly string[] _prefix;
+    // private readonly ulong[] _enabledGuilds;
+    // private readonly string[] _prefix;
+    private readonly KimiConfiguration _configuration;
 
     private readonly ILogger<RankingService> _logger;
 
@@ -19,11 +22,13 @@ public class RankingService
 
     private readonly UserRepository _userRepository;
 
-    public RankingService(ILogger<RankingService> logger, IConfiguration config, DiscordSocketClient client,
+    public RankingService(ILogger<RankingService> logger, IOptions<KimiConfiguration> options,
+        DiscordSocketClient client,
         UserRepository userRepository)
     {
-        _enabledGuilds = config.GetSection("Kimi:Ranking:Guilds").Get<ulong[]>() ?? [];
-        _prefix = config.GetSection("Discord:Prefix").Get<string[]>() ?? [];
+        // _enabledGuilds = options.Value.Guilds.Select(x => x.Id).ToArray();
+        // _prefix = config.GetSection("Discord:Prefix").Get<string[]>() ?? [];
+        _configuration = options.Value;
 
         _logger = logger;
         _client = client;
@@ -50,10 +55,10 @@ public class RankingService
             || socketMessage.Author.IsBot)
             return;
 
-        if (_enabledGuilds.All(x => x != channel.Guild.Id))
+        if (_configuration.Guilds.All(x => x.Id != channel.Guild.Id))
             return;
 
-        if (message.HasStringPrefix(_prefix) || message.HasMentionPrefix(_client.CurrentUser))
+        if (message.HasStringPrefix(_configuration.Prefixes) || message.HasMentionPrefix(_client.CurrentUser))
             return;
 
         var transaction = await _userRepository.BeginTransactionAsync();
@@ -63,14 +68,14 @@ public class RankingService
             var score = CalculateScore(message);
 
             var messageDto = new MessageDto(message);
-_logger.LogDebug("Score before deduction {score}", score);
+            _logger.LogDebug("Score before deduction {score}", score);
             var user = await _userRepository.GetOrCreateAsync(messageDto);
 
             var guildUser = user.GetGuildUserInfo(channel.Guild.Id);
             score = RetractTextSpamScore(guildUser, messageDto, score);
 
             _logger.LogDebug("[{user}] {message} - {score}", message.Author.Username, message.CleanContent, score);
-            
+
             await _userRepository.IncrementScoreAsync(messageDto, score);
 
             await _userRepository.UpdateLastMessageAsync(messageDto);
@@ -103,10 +108,10 @@ _logger.LogDebug("Score before deduction {score}", score);
             || cachedMessage.Value.Author.IsBot)
             return;
 
-        if (_enabledGuilds.All(x => x != channel.Guild.Id))
+        if (_configuration.Guilds.All(x => x.Id != channel.Guild.Id))
             return;
 
-        if (message.HasStringPrefix(_prefix) || message.HasMentionPrefix(_client.CurrentUser))
+        if (message.HasStringPrefix(_configuration.Prefixes) || message.HasMentionPrefix(_client.CurrentUser))
             return;
 
         var transaction = await _userRepository.BeginTransactionAsync();
@@ -218,7 +223,7 @@ _logger.LogDebug("Score before deduction {score}", score);
 
     private uint RetractTextSpamScore(GuildUser user, MessageDto message, uint score)
     {
-        if(user.LastMessage is null)
+        if (user.LastMessage is null)
             return score;
 
         return message.DateTime.Subtract(user.LastMessage.Value).Seconds switch
