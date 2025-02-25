@@ -2,7 +2,9 @@
 using Discord.WebSocket;
 using Kimi.Configuration;
 using Kimi.Jobs;
+using Kimi.Repository.Dtos;
 using Kimi.Repository.Models;
+using Kimi.Repository.Repositories;
 using Microsoft.Extensions.Options;
 
 namespace Kimi.Modules.Ranking;
@@ -15,22 +17,32 @@ public class LevelService
     private readonly DiscordSocketClient _client;
 
     private readonly JobService _jobService;
+    private readonly UserRepository _userRepository;
 
     public LevelService(IOptions<KimiConfiguration> configuration, ILogger<LevelService> logger, JobService jobService,
-        DiscordSocketClient client)
+        DiscordSocketClient client, UserRepository userRepository)
     {
         _configuration = configuration.Value;
         _logger = logger;
         _jobService = jobService;
         _client = client;
+        _userRepository = userRepository;
     }
 
     public async Task InitializeAsync()
     {
         _logger.LogInformation("Initializing Level Service");
         _jobService.RankingUpdate += OnRankingUpdate;
+        _client.UserJoined += OnUserJoined;
 
         await Task.CompletedTask;
+    }
+
+    private async Task OnUserJoined(SocketGuildUser user)
+    {
+        var dto = new AuthorDto(user);
+        await _userRepository.GetOrCreateAsync(dto);
+        await _jobService.ForceTriggerAsync("score");
     }
 
     private async Task OnRankingUpdate(Dictionary<Guild, DailyScore[]> guilds)

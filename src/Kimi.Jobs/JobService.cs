@@ -1,15 +1,18 @@
 ﻿using Kimi.Repository.Models;
+using Microsoft.Extensions.Logging;
 using Quartz;
 
 namespace Kimi.Jobs;
 
 public class JobService
 {
+    private readonly ILogger<JobService> _logger;
     private readonly ISchedulerFactory _schedulerFactory;
 
-    public JobService(ISchedulerFactory schedulerFactory)
+    public JobService(ILogger<JobService> logger, ISchedulerFactory schedulerFactory)
     {
         _schedulerFactory = schedulerFactory;
+        _logger = logger;
     }
 
     public event UserBirthdayHandler? UserBirthday;
@@ -66,10 +69,25 @@ public class JobService
         await scheduler.ScheduleJob(scoreJob, scoreTrigger);
         await scheduler.Start();
 
-        await Task.Delay(10000);
-
         await scheduler.TriggerJob(birthdayJob.Key);
         await scheduler.TriggerJob(scoreJob.Key);
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
+            await scheduler.Shutdown(true, cancellationToken);
+        }
+        catch (Exception ex) when (!ex.Message.Contains("shutdown", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogError(ex, "Error while shutting down the scheduler.");
+        }
+        catch (Exception)
+        {
+            // Ignored
+        }
     }
 
     public async Task ForceTriggerAsync(string jobName)

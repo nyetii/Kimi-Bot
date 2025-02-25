@@ -5,13 +5,16 @@ namespace Kimi;
 public class Worker : IHostedService
 {
     private readonly ILogger<Worker> _logger;
+    private readonly IHostApplicationLifetime _lifetime;
 
     private readonly DiscordService _discord;
     private readonly JobService _jobs;
 
-    public Worker(ILogger<Worker> logger, DiscordService discord, IConfiguration config, JobService jobs)
+    public Worker(ILogger<Worker> logger, IHostApplicationLifetime lifetime ,
+        DiscordService discord, IConfiguration config, JobService jobs)
     {
         _logger = logger;
+        _lifetime = lifetime;
         _discord = discord;
         _jobs = jobs;
     }
@@ -24,7 +27,9 @@ public class Worker : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Stopping...");
+        await _jobs.StopAsync(cancellationToken);
         await _discord.StopAsync(cancellationToken);
+        _lifetime.StopApplication();
+        _logger.LogInformation("Kimi Worker stopped");
     }
 }

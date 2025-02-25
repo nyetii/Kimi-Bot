@@ -71,7 +71,8 @@ public class Program
         builder.Services.AddSingleton<JobService>();
         builder.Services.AddQuartz();
 
-        builder.Services.AddHostedService<Worker>();
+        builder.Services.AddSingleton<Worker>();
+        builder.Services.AddHostedService(x => x.GetRequiredService<Worker>());
         builder.Services.AddQuartzHostedService(x => x.WaitForJobsToComplete = true);
 
         var host = builder.Build();

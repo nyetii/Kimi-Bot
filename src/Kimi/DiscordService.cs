@@ -90,7 +90,7 @@ public class DiscordService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _client.LogoutAsync();
+        await _client.StopAsync();
     }
 
     private async Task OnLogEvent(LogMessage message)
