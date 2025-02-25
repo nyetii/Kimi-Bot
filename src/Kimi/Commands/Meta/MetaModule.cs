@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using Kimi.Configuration;
+using Kimi.Jobs;
 using Microsoft.Extensions.Options;
 using InteractionService = Discord.Interactions.InteractionService;
 using ModuleInfo = Discord.Interactions.ModuleInfo;
@@ -14,16 +15,43 @@ public class MetaModule : ModuleBase<SocketCommandContext>
     private readonly InteractionService _interaction;
 
     private readonly KimiConfiguration _configuration;
-
-    public MetaModule(InteractionService interaction, IOptions<KimiConfiguration> options)
+    private readonly JobService _jobService;
+    private readonly Worker _worker;
+    
+    public MetaModule(InteractionService interaction, IOptions<KimiConfiguration> options, JobService jobService, Worker worker)
     {
         _interaction = interaction;
+        _jobService = jobService;
+        _worker = worker;
         _configuration = options.Value;
     }
 
     [Command("ping")]
     public async Task Ping() => await ReplyAsync($"Pong! {Context.Client.Latency}ms");
 
+    [Command("force-trigger")]
+    public async Task ForceTrigger([Remainder] string jobName)
+    {
+        try
+        {
+            await _jobService.ForceTriggerAsync(jobName);
+            await ReplyAsync("Triggered!");
+        }
+        catch (Exception ex)
+        {
+            await ReplyAsync($"Could not force trigger.\n{ex.Message}");
+            throw;
+        }
+    }
+
+    [RequireOwner]
+    [Command("shutdown")]
+    public async Task Shutdown()
+    {
+        await ReplyAsync("Shutting down...");
+        await _worker.StopAsync(CancellationToken.None);
+    }
+    
     [RequireOwner]
     [Command("fetch-roles")]
     public async Task FetchRoles(string? topRole = null, string? bottomRole = null)

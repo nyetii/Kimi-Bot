@@ -49,7 +49,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         [SlashCommand("set", "Updates Kimi status")]
-        public async Task UpdateStatus(string? message, string? url, ActivityType? activity, UserStatus? userStatus,
+        public async Task UpdateStatus(string? message, string? url = null, ActivityType? activity = ActivityType.CustomStatus, UserStatus? userStatus = UserStatus.Online,
             bool @default = false, bool persist = true, bool ephemeral = true)
         {
             await DeferAsync(ephemeral);
@@ -178,7 +178,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
                         var buttonBuilder = new ButtonBuilder();
                         buttonBuilder.WithLabel(" ");
                         buttonBuilder.WithStyle(ButtonStyle.Secondary);
-                        buttonBuilder.WithCustomId($"admin.roles.button:{button.RoleId}");
+                        buttonBuilder.WithCustomId($"role.selection-button:{button.RoleId}");
                         buttonBuilder.WithEmote(Emote.Parse(button.Emote));
                         buttonBuilder.WithDisabled(!roleExists);
                         rowBuilder.WithButton(buttonBuilder);
@@ -196,7 +196,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
 
                 var message = await socketChannel.GetMessageAsync(ulong.Parse(messageId ?? "1"));
 
-                if (message is SocketUserMessage socketMessage)
+                if (message is RestUserMessage socketMessage)
                 {
                     await socketMessage.ModifyAsync(x =>
                     {
@@ -222,41 +222,6 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
                 await FollowupAsync($"Could not retrieve message. {ex}", ephemeral: true);
                 throw;
             }
-        }
-
-        [ComponentInteraction("button:*")]
-        public async Task HandleRoleButton(ulong roleId)
-        {
-            await DeferAsync(true);
-            var top = Context.Guild.Roles.First(x => x.Id is 1343780800310542439);
-            var bottom = Context.Guild.Roles.First(x => x.Id is 1343521480868368469);
-
-            var roles = Context.Guild.Roles
-                .Where(x => x.Id != roleId
-                            && x.Position < (top?.Position ?? Context.Guild.Roles.Max(m => m.Position))
-                            && x.Position > (bottom?.Position ?? 0))
-                .OrderByDescending(x => x.Position).Select(x => x.Id).ToList();
-
-            if (Context.User is not SocketGuildUser guildUser)
-            {
-                await FollowupAsync($"??? Aconteceu algo de errado, chame {
-                    (await Context.Client.Rest.GetCurrentBotInfoAsync()).Owner.Username
-                }");
-                return;
-            }
-
-            // await guildUser.RemoveRolesAsync(roles,
-            //     new RequestOptions { AuditLogReason = "Member selected a new color" });
-            await guildUser.ModifyAsync(x => x.RoleIds = guildUser.Roles.Select(r => r.Id)
-                    .Except(roles)
-                    .Concat([roleId])
-                    .ToList(),
-                new RequestOptions { AuditLogReason = "Member selected a new color" });
-
-            // if (roleId is not 0)
-            //     await guildUser.AddRoleAsync(roleId, new RequestOptions { AuditLogReason = "Member's new color" });
-
-            //await FollowupAsync("Nova cor selecionada!", ephemeral: true);
         }
 
         private class Json

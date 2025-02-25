@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using Kimi.Configuration;
 using Kimi.Extensions;
+using Kimi.Repository.Dtos;
 using Kimi.Repository.Repositories;
 using Microsoft.Extensions.Options;
 
@@ -27,9 +28,12 @@ public class BirthdayModule : InteractionModuleBase<SocketInteractionContext>
         await DeferAsync(true);
         try
         {
+            var userDto = new AuthorDto(Context.Guild.Users.First(x => x.Id == Context.User.Id));
+            var user = await _userRepository.GetOrCreateAsync(userDto);
+            
             var date = new DateTime(DateTime.UtcNow.Year, (int)month, day);
 
-            await _userRepository.UpdateBirthdateAsync(Context.User.Id, date);
+            await _userRepository.UpdateBirthdateAsync(user.Id, date);
 
             await FollowupAsync($"All set! You're going to get a special birthday role on {date:M}", ephemeral: true);
         }
@@ -52,10 +56,22 @@ public class BirthdayModule : InteractionModuleBase<SocketInteractionContext>
     public async Task RemoveBirthday()
     {
         await DeferAsync(true);
-        
-        await _userRepository.UpdateBirthdateAsync(Context.User.Id);
 
-        await FollowupAsync($"Your birth date has been removed.", ephemeral: true);
+        try
+        {
+            await _userRepository.UpdateBirthdateAsync(Context.User.Id);
+
+            await FollowupAsync($"Your birth date has been removed.", ephemeral: true);
+        }
+        catch (Exception ex) when (ex.Message is "User not found.")
+        {
+            await FollowupAsync("idiota", ephemeral: true);
+        }
+        catch (Exception ex)
+        {
+            await Context.Client.SendToLogChannelAsync(_configuration.LogChannel, ex);
+            throw;
+        }
     }
 
     public enum Months

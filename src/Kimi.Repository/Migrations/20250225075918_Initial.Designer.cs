@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kimi.Repository.Migrations
 {
     [DbContext(typeof(KimiDbContext))]
-    [Migration("20250224052344_Ranking and Birthday")]
-    partial class RankingandBirthday
+    [Migration("20250225075918_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -90,6 +90,47 @@ namespace Kimi.Repository.Migrations
                         .IsUnique();
 
                     b.ToTable("GuildUsers");
+                });
+
+            modelBuilder.Entity("Kimi.Repository.Models.Profile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Default")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StatusActivityType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StatusMessage")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StatusType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StatusUrl")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Default");
+
+                    b.ToTable("Profiles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            Default = true,
+                            StatusActivityType = 4,
+                            StatusMessage = "",
+                            StatusType = 1
+                        });
                 });
 
             modelBuilder.Entity("Kimi.Repository.Models.User", b =>

@@ -6,7 +6,7 @@ namespace Kimi.Jobs;
 
 public class ScoreJob : IJob
 {
-    public static readonly JobKey Key = new("score-job", "hourly");
+    public static readonly JobKey Key = new("score");
     
     private readonly ILogger<ScoreJob> _logger;
     private readonly JobService _jobService;
@@ -27,7 +27,7 @@ public class ScoreJob : IJob
         
         try
         {
-            var guilds = await _guildRepository.GetScoresFromAllGuildsAsync(DateTime.Now.AddDays(-1));
+            var guilds = await _guildRepository.GetScoresFromAllGuildsAsync(DateTime.Now.AddMonths(-1));
 
             await _jobService.OnRankingUpdate(guilds);
         }

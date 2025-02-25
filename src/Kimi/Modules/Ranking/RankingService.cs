@@ -74,8 +74,11 @@ public class RankingService
             var score = CalculateScore(message);
 
             var messageDto = new MessageDto(message);
+            if (messageDto.Author is null)
+                throw new Exception("Author is null");
+            
             _logger.LogDebug("Score before deduction {score}", score);
-            var user = await _userRepository.GetOrCreateAsync(messageDto);
+            var user = await _userRepository.GetOrCreateAsync(messageDto.Author);
 
             var guildUser = user.GetGuildUserInfo(channel.Guild.Id);
             score = RetractTextSpamScore(guildUser, messageDto, score);

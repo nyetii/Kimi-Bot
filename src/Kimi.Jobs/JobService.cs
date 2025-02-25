@@ -43,7 +43,7 @@ public class JobService
             .Build();
 
         var birthdayTrigger = TriggerBuilder.Create()
-            .WithIdentity("birthday-trigger", "midnight")
+            .WithIdentity("birthday-trigger")
             .ForJob(birthdayJob)
             .StartNow()
             .WithCronSchedule("0 0 0 1/1 * ? *",
@@ -53,7 +53,7 @@ public class JobService
             .Build();
         
         var scoreTrigger = TriggerBuilder.Create()
-            .WithIdentity("score-trigger", "hourly")
+            .WithIdentity("score-trigger")
             .ForJob(scoreJob)
             .StartNow()
             .WithCronSchedule("0 0 0/1 1/1 * ? *",
@@ -70,5 +70,11 @@ public class JobService
 
         await scheduler.TriggerJob(birthdayJob.Key);
         await scheduler.TriggerJob(scoreJob.Key);
+    }
+
+    public async Task ForceTriggerAsync(string jobName)
+    {
+        var scheduler = await _schedulerFactory.GetScheduler();
+        await scheduler.TriggerJob(new JobKey(jobName));
     }
 }

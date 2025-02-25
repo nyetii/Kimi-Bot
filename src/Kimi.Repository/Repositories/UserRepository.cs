@@ -23,28 +23,29 @@ public class UserRepository
         return await _dbContext.Database.BeginTransactionAsync();
     }
 
-    public async Task<User> GetOrCreateAsync(MessageDto message)
+    public async Task<User> GetOrCreateAsync(AuthorDto 
+        author)
     {
-        if (message.Author is null)
+        if (author is null)
             throw new Exception("Author is null.");
 
         var user = await _dbContext.Users
             .Include(x => x.GuildUsers)
-            .FirstOrDefaultAsync(x => x.Id == message.Author.Id);
+            .FirstOrDefaultAsync(x => x.Id == author.Id);
 
         if (user is not null)
             return user;
 
-        user = message.Author.ToEntity();
+        user = author.ToEntity();
 
-        var guild = await _dbContext.Guilds.FindAsync(message.Author.GuildId) ?? throw new Exception("Guild is null.");
+        var guild = await _dbContext.Guilds.FindAsync(author.GuildId) ?? throw new Exception("Guild is null.");
 
         user.Guilds.Add(guild);
         user.GuildUsers.Add(new GuildUser
         {
             GuildId = guild.Id,
-            UserId = message.Author.Id,
-            Nickname = message.Author.Nickname
+            UserId = author.Id,
+            Nickname = author.Nickname
         });
 
         await _dbContext.Users.AddAsync(user);

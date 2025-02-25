@@ -5,7 +5,7 @@ namespace Kimi.Jobs;
 
 public class BirthdayJob : IJob
 {
-    public static readonly JobKey Key = new("birthday-job", "midnight");
+    public static readonly JobKey Key = new("birthday");
 
     private readonly JobService _jobService;
     private readonly UserRepository _userRepository;

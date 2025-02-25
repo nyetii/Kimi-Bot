@@ -24,6 +24,7 @@ public class Worker : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Stopping...");
         await _discord.StopAsync(cancellationToken);
     }
 }
