@@ -60,6 +60,204 @@ namespace Kimi.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Aniversário!!!.
+        /// </summary>
+        internal static string birthday_description {
+            get {
+                return ResourceManager.GetString("birthday.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to aniversario.
+        /// </summary>
+        internal static string birthday_name {
+            get {
+                return ResourceManager.GetString("birthday.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove a data do seu aniversário do banco de dados.
+        /// </summary>
+        internal static string birthday_remove_description {
+            get {
+                return ResourceManager.GetString("birthday.remove.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to remover.
+        /// </summary>
+        internal static string birthday_remove_name {
+            get {
+                return ResourceManager.GetString("birthday.remove.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to O dia do seu aniversário.
+        /// </summary>
+        internal static string birthday_set_day_description {
+            get {
+                return ResourceManager.GetString("birthday.set.day.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to dia.
+        /// </summary>
+        internal static string birthday_set_day_name {
+            get {
+                return ResourceManager.GetString("birthday.set.day.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Seleciona a data do seu aniversário para você ganhar um cargo especial no dia.
+        /// </summary>
+        internal static string birthday_set_description {
+            get {
+                return ResourceManager.GetString("birthday.set.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Abril.
+        /// </summary>
+        internal static string birthday_set_month_april_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.april.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Agosto.
+        /// </summary>
+        internal static string birthday_set_month_august_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.august.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dezembro.
+        /// </summary>
+        internal static string birthday_set_month_december_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.december.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to O mês do seu aniversário.
+        /// </summary>
+        internal static string birthday_set_month_description {
+            get {
+                return ResourceManager.GetString("birthday.set.month.description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fevereiro.
+        /// </summary>
+        internal static string birthday_set_month_february_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.february.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Janeiro.
+        /// </summary>
+        internal static string birthday_set_month_january_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.january.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Julho.
+        /// </summary>
+        internal static string birthday_set_month_july_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.july.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Junho.
+        /// </summary>
+        internal static string birthday_set_month_june_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.june.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Março.
+        /// </summary>
+        internal static string birthday_set_month_march_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.march.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maio.
+        /// </summary>
+        internal static string birthday_set_month_may_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.may.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to mes.
+        /// </summary>
+        internal static string birthday_set_month_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Novembro.
+        /// </summary>
+        internal static string birthday_set_month_november_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.november.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Outubro.
+        /// </summary>
+        internal static string birthday_set_month_october_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.october.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setembro.
+        /// </summary>
+        internal static string birthday_set_month_september_name {
+            get {
+                return ResourceManager.GetString("birthday.set.month.september.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to adicionar.
+        /// </summary>
+        internal static string birthday_set_name {
+            get {
+                return ResourceManager.GetString("birthday.set.name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lista o top 10 membros por pontuação.
         /// </summary>
         internal static string ranking_top_description {

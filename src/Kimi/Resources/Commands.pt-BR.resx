@@ -105,4 +105,70 @@
     <data name="ranking.top-period.end-date.description" xml:space="preserve">
         <value>A data final. Se nenhuma data for providenciada, o dia de hoje será considerado</value>
     </data>
+    <data name="birthday.set.name" xml:space="preserve">
+        <value>adicionar</value>
+    </data>
+    <data name="birthday.name" xml:space="preserve">
+        <value>aniversario</value>
+    </data>
+    <data name="birthday.description" xml:space="preserve">
+        <value>Aniversário!!!</value>
+    </data>
+    <data name="birthday.set.description" xml:space="preserve">
+        <value>Seleciona a data do seu aniversário para você ganhar um cargo especial no dia</value>
+    </data>
+    <data name="birthday.remove.name" xml:space="preserve">
+        <value>remover</value>
+    </data>
+    <data name="birthday.remove.description" xml:space="preserve">
+        <value>Remove a data do seu aniversário do banco de dados</value>
+    </data>
+    <data name="birthday.set.day.name" xml:space="preserve">
+        <value>dia</value>
+    </data>
+    <data name="birthday.set.month.name" xml:space="preserve">
+        <value>mes</value>
+    </data>
+    <data name="birthday.set.month.january.name" xml:space="preserve">
+        <value>Janeiro</value>
+    </data>
+    <data name="birthday.set.month.april.name" xml:space="preserve">
+        <value>Abril</value>
+    </data>
+    <data name="birthday.set.month.august.name" xml:space="preserve">
+        <value>Agosto</value>
+    </data>
+    <data name="birthday.set.month.december.name" xml:space="preserve">
+        <value>Dezembro</value>
+    </data>
+    <data name="birthday.set.month.february.name" xml:space="preserve">
+        <value>Fevereiro</value>
+    </data>
+    <data name="birthday.set.month.july.name" xml:space="preserve">
+        <value>Julho</value>
+    </data>
+    <data name="birthday.set.month.march.name" xml:space="preserve">
+        <value>Março</value>
+    </data>
+    <data name="birthday.set.month.june.name" xml:space="preserve">
+        <value>Junho</value>
+    </data>
+    <data name="birthday.set.month.may.name" xml:space="preserve">
+        <value>Maio</value>
+    </data>
+    <data name="birthday.set.month.november.name" xml:space="preserve">
+        <value>Novembro</value>
+    </data>
+    <data name="birthday.set.month.october.name" xml:space="preserve">
+        <value>Outubro</value>
+    </data>
+    <data name="birthday.set.month.september.name" xml:space="preserve">
+        <value>Setembro</value>
+    </data>
+    <data name="birthday.set.day.description" xml:space="preserve">
+        <value>O dia do seu aniversário</value>
+    </data>
+    <data name="birthday.set.month.description" xml:space="preserve">
+        <value>O mês do seu aniversário</value>
+    </data>
 </root>

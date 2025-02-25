@@ -10,12 +10,13 @@ public class User
     
     [MaxLength(32)]
     public string Username { get; set; } = "unknown";
+    public DateOnly? Birthday { get; set; }
     public ICollection<Guild> Guilds { get; init; } = [];
-    public ICollection<GuildUser> GuildsUsers { get; init; } = [];
+    public ICollection<GuildUser> GuildUsers { get; init; } = [];
     public ICollection<DailyScore> DailyScores { get; init; } = [];
 
     public GuildUser GetGuildUserInfo(ulong guildId)
-        => GuildsUsers.First(x => x.GuildId == guildId);
+        => GuildUsers.First(x => x.GuildId == guildId);
     
     public static User ToEntity(SocketUserMessage message)
     {

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Kimi.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class RankingandBirthday : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,7 +30,8 @@ namespace Kimi.Repository.Migrations
                 {
                     Id = table.Column<ulong>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Username = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false)
+                    Username = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    Birthday = table.Column<DateOnly>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

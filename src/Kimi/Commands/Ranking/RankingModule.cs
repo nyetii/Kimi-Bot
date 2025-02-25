@@ -44,6 +44,9 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         await FollowupAsync(embed: result.Embed, components: result.Component, ephemeral: ephemeral);
+        
+        if (result.Component is not null)
+            await DisableButtonsAsync(result.Component);
     }
 
     [SlashCommand("top-period", "Lists the top 10 users by score during a certain period")]
@@ -80,6 +83,9 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         await FollowupAsync(embed: result.Embed, components: result.Component, ephemeral: ephemeral);
+        
+        if (result.Component is not null)
+            await DisableButtonsAsync(result.Component);
     }
 
     [ComponentInteraction("paging:*,*,*,*,*")]
@@ -104,6 +110,27 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
         {
             x.Embed = result.Embed;
             x.Components = result.Component;
+        });
+    }
+
+    private async Task DisableButtonsAsync(MessageComponent messageComponent)
+    {
+        await Task.Delay(TimeSpan.FromMinutes(5));
+        
+        var componentBuilder = new ComponentBuilder();
+        foreach (var component in messageComponent.Components)
+        {
+            var row = new ActionRowBuilder();
+            foreach (var button in component.Components.Cast<ButtonComponent>())
+            {
+                row.AddComponent(button.ToBuilder().WithDisabled(true).Build());
+            }
+            componentBuilder.AddRow(row);
+        }
+        
+        await ModifyOriginalResponseAsync(x =>
+        {
+            x.Components = componentBuilder.Build();
         });
     }
 

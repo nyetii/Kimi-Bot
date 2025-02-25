@@ -58,11 +58,14 @@ public record PeriodDto
 
 public enum PeriodType
 {
-    [ChoiceDisplay("all-time")] AllTime = 0,
+    [ChoiceDisplay("all-time")] 
+    AllTime = 0,
     Daily = 1,
     Weekly = 2,
     Monthly = 3,
     Yearly = 4,
-    [ChoiceDisplay("ytd")] YearToDate = 5,
-    [Hide] Specific = 6
+    [ChoiceDisplay("ytd")] 
+    YearToDate = 5,
+    [Hide] 
+    Specific = 6
 }

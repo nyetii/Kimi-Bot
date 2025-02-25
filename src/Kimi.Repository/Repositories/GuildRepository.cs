@@ -99,6 +99,17 @@ public class GuildRepository
         return totalDailyScoresByUser.ToList();
     }
 
+    public async Task<Dictionary<Guild, DailyScore[]>> GetScoresFromAllGuildsAsync(DateTime cutoff)
+    {
+        return await _dbContext.Guilds
+            .Include(x => x.DailyScores.Where(ds => ds.Date >= DateOnly.FromDateTime(cutoff)))
+            .ThenInclude(x => x.User)
+            .ThenInclude(x => x.GuildUsers)
+            .AsSplitQuery()
+            .ToDictionaryAsync(x => x, x => x.DailyScores
+                .ToArray());
+    }
+
     public async Task<bool> SaveAsync()
     {
         return await _dbContext.SaveChangesAsync() > 0;

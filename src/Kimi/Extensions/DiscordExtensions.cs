@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Text;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
@@ -29,5 +30,35 @@ public static class DiscordExtensions
     {
         var pos = 0;
         return message.HasMentionPrefix(user, ref pos);
+    }
+
+    public static async Task SendToLogChannelAsync(this DiscordSocketClient client, ulong channelId, string message)
+    {
+        if (channelId is 0)
+            return;
+        
+        var channel = client.GetChannel(channelId);
+
+        if (channel is ISocketMessageChannel socketChannel)
+        {
+            await socketChannel.SendMessageAsync(message);
+        }
+    }
+
+    public static async Task SendToLogChannelAsync(this DiscordSocketClient client, ulong channelId, Exception exception)
+    {
+        if (channelId is 0)
+            return;
+        
+        var strBuilder = new StringBuilder();
+        strBuilder.AppendLine("```yaml")
+            .AppendLine($"Method: {exception.TargetSite?.ToString()}")
+            .AppendLine($"{exception.GetType().Name}: {exception.Message}")
+            .AppendLine()
+            .AppendLine("!STACKTRACE")
+            .AppendLine(exception.StackTrace)
+            .AppendLine("```");
+        
+        await client.SendToLogChannelAsync(channelId, strBuilder.ToString());
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
-using Kimi.Commands.Configuration;
+using Kimi.Configuration;
 using Kimi.Extensions;
 using Kimi.Repository.Dtos;
 using Kimi.Repository.Models;
@@ -12,41 +12,47 @@ namespace Kimi.Modules.Ranking;
 
 public class RankingService
 {
-    // private readonly ulong[] _enabledGuilds;
-    // private readonly string[] _prefix;
     private readonly KimiConfiguration _configuration;
-
     private readonly ILogger<RankingService> _logger;
 
     private readonly DiscordSocketClient _client;
 
+    private readonly LevelService _levelService;
     private readonly UserRepository _userRepository;
 
     public RankingService(ILogger<RankingService> logger, IOptions<KimiConfiguration> options,
         DiscordSocketClient client,
-        UserRepository userRepository)
+        UserRepository userRepository, LevelService levelService)
     {
-        // _enabledGuilds = options.Value.Guilds.Select(x => x.Id).ToArray();
-        // _prefix = config.GetSection("Discord:Prefix").Get<string[]>() ?? [];
         _configuration = options.Value;
 
         _logger = logger;
         _client = client;
         _userRepository = userRepository;
+        _levelService = levelService;
     }
 
     public async Task InitializeAsync()
     {
+        _logger.LogInformation("Initializing Ranking Service");
         _client.GuildMemberUpdated += OnUserUpdated;
         _client.MessageReceived += OnMessageReceived;
         _client.MessageDeleted += OnMessageDeleted;
 
-        await Task.CompletedTask;
+        await _levelService.InitializeAsync();
     }
 
     private async Task OnUserUpdated(Cacheable<SocketGuildUser, ulong> old, SocketGuildUser updated)
     {
-        await _userRepository.UpdateNamesAsync(updated);
+        try
+        {
+            await _userRepository.UpdateNamesAsync(updated);
+        }
+        catch (Exception ex)
+        {
+            await _client.SendToLogChannelAsync(_configuration.LogChannel, ex);
+            throw;
+        }
     }
 
     private async Task OnMessageReceived(SocketMessage socketMessage)
@@ -84,15 +90,7 @@ public class RankingService
         }
         catch (Exception ex)
         {
-            var netty = await _client.GetUserAsync(191604848423075840);
-
-            if (netty is not null)
-            {
-                await using var sw = new StreamWriter(new MemoryStream());
-                await sw.WriteLineAsync(ex.ToString());
-                await sw.FlushAsync();
-                await netty.SendFileAsync(sw.BaseStream, "exception.txt", "CATÁSTROFE");
-            }
+            await _client.SendToLogChannelAsync(_configuration.LogChannel, ex);
 
             await transaction.RollbackAsync();
             await transaction.DisposeAsync();
@@ -130,15 +128,7 @@ public class RankingService
         }
         catch (Exception ex)
         {
-            var netty = await _client.GetUserAsync(191604848423075840);
-
-            if (netty is not null)
-            {
-                await using var sw = new StreamWriter(new MemoryStream());
-                await sw.WriteLineAsync(ex.ToString());
-                await sw.FlushAsync();
-                await netty.SendFileAsync(sw.BaseStream, "exception.txt", "CATÁSTROFE");
-            }
+            await _client.SendToLogChannelAsync(_configuration.LogChannel, ex);
 
             await transaction.RollbackAsync();
             await transaction.DisposeAsync();
@@ -149,9 +139,9 @@ public class RankingService
 
     private uint CalculateScore(SocketUserMessage message)
     {
-        if (Regexes.UrlMatch().IsMatch(message.CleanContent))
+        if (RankingRegex.UrlMatch().IsMatch(message.CleanContent))
         {
-            var regex = Regexes
+            var regex = RankingRegex
                 .UrlMatch()
                 .Split(message.CleanContent)
                 .Where(str => !string.IsNullOrWhiteSpace(str))
@@ -165,9 +155,9 @@ public class RankingService
         if ((message.Flags & MessageFlags.VoiceMessage) != 0)
             return 10;
 
-        if (Regexes.RepetitionMatch().IsMatch(message.CleanContent))
+        if (RankingRegex.RepetitionMatch().IsMatch(message.CleanContent))
         {
-            var matches = Regexes
+            var matches = RankingRegex
                 .RepetitionMatch()
                 .Matches(message.CleanContent)
                 .ToList();
@@ -175,9 +165,9 @@ public class RankingService
             return CalculateTextQualityScore(matches, message);
         }
 
-        if (Regexes.EmoteMatch().IsMatch(message.Content))
+        if (RankingRegex.EmoteMatch().IsMatch(message.Content))
         {
-            var matches = Regexes
+            var matches = RankingRegex
                 .EmoteMatch()
                 .Matches(message.Content)
                 .ToList();
@@ -189,8 +179,9 @@ public class RankingService
             ? 2 + message.Attachments.Count / 2
             : 0;
 
-        if (string.IsNullOrWhiteSpace(message.CleanContent) && message.Attachments.Any(x =>
-                x.ContentType.Contains("image/") || x.ContentType.Contains("video/")))
+        if (string.IsNullOrWhiteSpace(message.CleanContent) && message.Attachments.Any(x
+                => !string.IsNullOrWhiteSpace(x.ContentType)
+                   && (x.ContentType.Contains("image/") || x.ContentType.Contains("video/"))))
             return attachmentsFactor > 4
                 ? (uint)(message.Attachments.Count - Math.Log10(message.Attachments.Count) *
                     (message.Attachments.Count / 2.0))

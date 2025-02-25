@@ -29,7 +29,7 @@ public class UserRepository
             throw new Exception("Author is null.");
 
         var user = await _dbContext.Users
-            .Include(x => x.GuildsUsers)
+            .Include(x => x.GuildUsers)
             .FirstOrDefaultAsync(x => x.Id == message.Author.Id);
 
         if (user is not null)
@@ -40,7 +40,7 @@ public class UserRepository
         var guild = await _dbContext.Guilds.FindAsync(message.Author.GuildId) ?? throw new Exception("Guild is null.");
 
         user.Guilds.Add(guild);
-        user.GuildsUsers.Add(new GuildUser
+        user.GuildUsers.Add(new GuildUser
         {
             GuildId = guild.Id,
             UserId = message.Author.Id,
@@ -64,7 +64,7 @@ public class UserRepository
         var daily = await _dbContext.DailyScores
             .Include(x => x.Guild)
             .Include(x => x.User)
-            .ThenInclude(x => x.GuildsUsers)
+            .ThenInclude(x => x.GuildUsers)
             .Where(x => x.UserId == message.Author.Id
                         && x.GuildId == message.Author.Guild.Id)
             .FirstOrDefaultAsync(x => x.Date == DateOnly.FromDateTime(DateTime.UtcNow));
@@ -74,7 +74,8 @@ public class UserRepository
             daily.Score += score;
             daily.MessageCount++;
             _dbContext.DailyScores.Update(daily);
-            _logger.LogInformation("Added {score} points to {username} [Total {total}]", score, daily.User.Username,
+            _logger.LogInformation("[{guild}] Added {score} points to {username} [Daily Total {total}]",
+                message.Author.Guild.Name, score, daily.User.Username,
                 daily.Score);
 
             await _dbContext.SaveChangesAsync();
@@ -90,7 +91,8 @@ public class UserRepository
             UserId = message.Author.Id
         };
         await _dbContext.DailyScores.AddAsync(daily);
-        _logger.LogInformation("Created today's score stats for {username}", message.Author.Username);
+        _logger.LogInformation("[{guild}] Created today's score stats for {username}", message.Author.Guild.Name,
+            message.Author.Username);
 
         await _dbContext.SaveChangesAsync();
     }
@@ -103,7 +105,7 @@ public class UserRepository
         var daily = await _dbContext.DailyScores
             .Include(x => x.Guild)
             .Include(x => x.User)
-            .ThenInclude(x => x.GuildsUsers)
+            .ThenInclude(x => x.GuildUsers)
             .Where(x => x.UserId == message.Author.Id
                         && x.GuildId == message.Author.Guild.Id)
             .FirstOrDefaultAsync(x => x.Date == DateOnly.FromDateTime(message.DateTime));
@@ -113,14 +115,17 @@ public class UserRepository
             daily.Score -= score;
             daily.MessageCount--;
             _dbContext.DailyScores.Update(daily);
-            _logger.LogInformation("Removed {score} points from {username} [Total {total}]", score, daily.User.Username,
+            _logger.LogInformation("[{guild}] Removed {score} points from {username} [Daily Total {total}]",
+                message.Author.Guild.Name, score,
+                daily.User.Username,
                 daily.Score);
 
             await _dbContext.SaveChangesAsync();
             return;
         }
 
-        _logger.LogInformation("{username} does not have a logged score from {date}", message.Author.Username,
+        _logger.LogInformation("[{guild}] {username} does not have a logged score from {date}",
+            message.Author.Guild.Name, message.Author.Username,
             message.DateTime);
     }
 
@@ -130,7 +135,7 @@ public class UserRepository
             throw new Exception("Author is null.");
 
         var user = await _dbContext.Users
-            .Include(x => x.GuildsUsers)
+            .Include(x => x.GuildUsers)
             .FirstOrDefaultAsync(x => x.Id == userDto.Id) ?? throw new Exception("User is null.");
 
         var userInfo = user.GetGuildUserInfo(userDto.Guild.Id);
@@ -138,7 +143,8 @@ public class UserRepository
 
         _dbContext.GuildUsers.Update(userInfo);
 
-        _logger.LogInformation("Updated last message from {username}: {message}", user.Username, message.DateTime);
+        _logger.LogInformation("[{guild}] Updated last message from {username}: {message}", message.Author.Guild.Name,
+            user.Username, message.DateTime);
 
         await _dbContext.SaveChangesAsync();
     }
@@ -146,7 +152,7 @@ public class UserRepository
     public async Task UpdateNamesAsync(SocketGuildUser discordUser)
     {
         var user = await _dbContext.Users
-            .Include(x => x.GuildsUsers)
+            .Include(x => x.GuildUsers)
             .FirstOrDefaultAsync(x => x.Id == discordUser.Id);
 
         if (user is null)
@@ -156,16 +162,53 @@ public class UserRepository
 
         if (user.Username != discordUser.Username)
         {
+            _logger.LogInformation("Updated username: {old} -> {new}", user.Username, discordUser.Username);
             user.Username = discordUser.Username;
             _dbContext.Users.Update(user);
         }
 
         if (guildUser.Nickname != discordUser.Nickname)
         {
+            _logger.LogInformation("[{guild}] Updated nickname: {old} -> {new}", discordUser.Guild.Name,
+                guildUser.Nickname, discordUser.Nickname);
             guildUser.Nickname = discordUser.Nickname;
+            
             _dbContext.GuildUsers.Update(guildUser);
         }
 
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<ulong[]> GetBirthdayUserIdsAsync(DateTime? dateTime = null)
+    {
+        var date = DateOnly.FromDateTime(
+            TimeZoneInfo.ConvertTimeFromUtc(dateTime?.ToUniversalTime() ?? DateTime.UtcNow,
+                TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time")));
+
+        return await _dbContext.Users
+            .Where(x => x.Birthday != null
+                        && x.Birthday.Value.Month == date.Month
+                        && x.Birthday.Value.Day == date.Day)
+            .AsNoTracking()
+            .Select(x => x.Id)
+            .ToArrayAsync();
+    }
+
+
+    public async Task UpdateBirthdateAsync(ulong userId, DateTime? dateTime = null)
+    {
+        var user = await _dbContext.Users.FindAsync(userId) ?? throw new Exception("User not found.");
+
+        if (user.Birthday is not null && dateTime is not null)
+            throw new Exception("Birthdate is already set.");
+
+        user.Birthday = dateTime is not null
+            ? DateOnly.FromDateTime(dateTime.Value.ToUniversalTime())
+            : null;
+
+        _logger.LogInformation("Updated birthdate for {user}: {date}", user.Username, user.Birthday);
+
+        _dbContext.Users.Update(user);
         await _dbContext.SaveChangesAsync();
     }
 

@@ -1,7 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Kimi.Commands;
-using Kimi.Commands.Configuration;
+using Kimi.Configuration;
+using Kimi.Modules.Birthday;
 using Kimi.Modules.Ranking;
 using Kimi.Repository.Dtos;
 using Kimi.Repository.Repositories;
@@ -12,6 +13,7 @@ namespace Kimi;
 public class DiscordService
 {
     private readonly ILogger<DiscordService> _logger;
+    private readonly KimiConfiguration _configuration;
 
     private readonly string _token;
 
@@ -20,16 +22,19 @@ public class DiscordService
     private readonly InteractionHandler _interaction;
 
     private readonly RankingService _rankingService;
+    private readonly BirthdayService _birthdayService;
 
     private readonly GuildRepository _guildRepository;
+    private readonly ProfileRepository _profileRepository;
 
     private readonly ulong[] _guilds;
 
     public DiscordService(ILogger<DiscordService> logger, DiscordSocketClient client,
         CommandHandler command, InteractionHandler interaction, IServiceScopeFactory scopeFactory,
-        IConfiguration config, IOptions<KimiConfiguration> options)
+        IConfiguration config, IOptions<KimiConfiguration> options, BirthdayService birthdayService)
     {
         _logger = logger;
+        _configuration = options.Value;
         _token = config["Discord:Token"] ?? throw new Exception("Token is missing.");
         _client = client;
         _command = command;
@@ -37,7 +42,10 @@ public class DiscordService
 
         var scope = scopeFactory.CreateScope();
         _guildRepository = scope.ServiceProvider.GetRequiredService<GuildRepository>();
+        _profileRepository = scope.ServiceProvider.GetRequiredService<ProfileRepository>();
+
         _rankingService = scope.ServiceProvider.GetRequiredService<RankingService>();
+        _birthdayService = birthdayService;
 
         _guilds = options.Value.Guilds.Select(x => x.Id).ToArray();
     }
@@ -49,7 +57,7 @@ public class DiscordService
         await _command.InitializeAsync();
         await _interaction.InitializeAsync();
         _client.Ready += OnReadyAsync;
-    
+
         await _client.LoginAsync(TokenType.Bot, _token);
 
         await _client.StartAsync();
@@ -66,6 +74,18 @@ public class DiscordService
         await _guildRepository.SaveAsync();
 
         await _rankingService.InitializeAsync();
+        await _birthdayService.InitializeAsync();
+
+        var profile = await _profileRepository.GetAsync();
+        if (profile is not null)
+        {
+            await _client.SetStatusAsync(profile.StatusType);
+            await _client.SetGameAsync(profile.StatusMessage, profile.StatusUrl, profile.StatusActivityType);
+        }
+
+        await _interaction.RegisterModulesAsync();
+
+        _client.Ready -= OnReadyAsync;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

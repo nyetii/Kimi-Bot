@@ -1,14 +1,13 @@
 ﻿using System.Text;
 using Discord;
 using Discord.Commands;
-using Kimi.Commands.Configuration;
+using Kimi.Configuration;
 using Microsoft.Extensions.Options;
 using InteractionService = Discord.Interactions.InteractionService;
 using ModuleInfo = Discord.Interactions.ModuleInfo;
 
 namespace Kimi.Commands.Meta;
 
-[RequireOwner]
 [Group("meta")]
 public class MetaModule : ModuleBase<SocketCommandContext>
 {
@@ -25,6 +24,33 @@ public class MetaModule : ModuleBase<SocketCommandContext>
     [Command("ping")]
     public async Task Ping() => await ReplyAsync($"Pong! {Context.Client.Latency}ms");
 
+    [RequireOwner]
+    [Command("fetch-roles")]
+    public async Task FetchRoles(string? topRole = null, string? bottomRole = null)
+    {
+        var top = await Context.Guild.GetRoleAsync(ulong.Parse(topRole ?? "0"));
+        var bottom = await Context.Guild.GetRoleAsync(ulong.Parse(bottomRole ?? "0"));
+
+        var roles = Context.Guild.Roles.Where(x
+            => x.Position < (top?.Position ?? Context.Guild.Roles.Max(m => m.Position))
+               && x.Position > (bottom?.Position ?? 0)).OrderByDescending(x => x.Position);
+
+        var embedBuilder = new EmbedBuilder();
+        embedBuilder.WithColor(243, 197, 199);
+        embedBuilder.WithAuthor("Embed to make it pretty!");
+        embedBuilder.WithTitle("Fetched Roles");
+        embedBuilder.WithThumbnailUrl("https://cdn.discordapp.com/attachments/354786508550569994/1343786350285033472/ezgif-67a72d80be1893.gif?ex=67be8a10&is=67bd3890&hm=813bd852d29227b94fdd85ccdd2b5c97c50db8b2bd1936cea0c9f2cf1bb9fba9&");
+        foreach (var role in roles)
+        {
+            embedBuilder.AddField(role.Name, $"[Icon]({role.GetIconUrl()}) - {role.Color.ToString().ToUpper()}");
+        }
+        embedBuilder.WithFooter("<3", Context.User.GetAvatarUrl());
+        embedBuilder.WithCurrentTimestamp();
+
+        await ReplyAsync(embed: embedBuilder.Build());
+    }
+
+    [RequireOwner]
     [Command("refresh")]
     public async Task RefreshModules()
     {
@@ -69,7 +95,8 @@ public class MetaModule : ModuleBase<SocketCommandContext>
         var embed = new EmbedBuilder()
             .WithColor(243, 197, 199)
             .WithAuthor("Meta", Context.Guild.IconUrl)
-            .WithThumbnailUrl("https://cdn.discordapp.com/attachments/354789360035561483/1341676355493953588/SCpink.png?ex=67b6dcfa&is=67b58b7a&hm=abbf0967972113576da8ab80fad1633970bb1384cae47c589d91150444a68877&")
+            .WithThumbnailUrl(
+                "https://cdn.discordapp.com/attachments/354789360035561483/1341676355493953588/SCpink.png?ex=67b6dcfa&is=67b58b7a&hm=abbf0967972113576da8ab80fad1633970bb1384cae47c589d91150444a68877&")
             .WithTitle("Modules")
             .WithDescription("Status of the modules in this server")
             .WithFields(modules.Select(module

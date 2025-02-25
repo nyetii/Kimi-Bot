@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kimi.Repository.Migrations
 {
     [DbContext(typeof(KimiDbContext))]
-    [Migration("20250218012548_Initial")]
-    partial class Initial
+    [Migration("20250224052344_Ranking and Birthday")]
+    partial class RankingandBirthday
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -98,6 +98,9 @@ namespace Kimi.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateOnly?>("Birthday")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -136,7 +139,7 @@ namespace Kimi.Repository.Migrations
                         .IsRequired();
 
                     b.HasOne("Kimi.Repository.Models.User", "User")
-                        .WithMany("GuildsUsers")
+                        .WithMany("GuildUsers")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -157,7 +160,7 @@ namespace Kimi.Repository.Migrations
                 {
                     b.Navigation("DailyScores");
 
-                    b.Navigation("GuildsUsers");
+                    b.Navigation("GuildUsers");
                 });
 #pragma warning restore 612, 618
         }

@@ -105,4 +105,70 @@
     <data name="ranking.top-period.end-date.description" xml:space="preserve">
         <value>The ending date. If no date is provided, today will be considered the ending date</value>
     </data>
+    <data name="birthday.set.name" xml:space="preserve">
+        <value>set</value>
+    </data>
+    <data name="birthday.name" xml:space="preserve">
+        <value>birthday</value>
+    </data>
+    <data name="birthday.description" xml:space="preserve">
+        <value>Birthday!!!</value>
+    </data>
+    <data name="birthday.set.description" xml:space="preserve">
+        <value>Set your birthdate so you can earn a role</value>
+    </data>
+    <data name="birthday.remove.name" xml:space="preserve">
+        <value>remove</value>
+    </data>
+    <data name="birthday.remove.description" xml:space="preserve">
+        <value>Remove your birthdate from the database</value>
+    </data>
+    <data name="birthday.set.day.name" xml:space="preserve">
+        <value>day</value>
+    </data>
+    <data name="birthday.set.month.name" xml:space="preserve">
+        <value>month</value>
+    </data>
+    <data name="birthday.set.month.january.name" xml:space="preserve">
+        <value>January</value>
+    </data>
+    <data name="birthday.set.month.february.name" xml:space="preserve">
+        <value>February</value>
+    </data>
+    <data name="birthday.set.month.march.name" xml:space="preserve">
+        <value>March</value>
+    </data>
+    <data name="birthday.set.month.april.name" xml:space="preserve">
+        <value>April</value>
+    </data>
+    <data name="birthday.set.month.may.name" xml:space="preserve">
+        <value>May</value>
+    </data>
+    <data name="birthday.set.month.june.name" xml:space="preserve">
+        <value>June</value>
+    </data>
+    <data name="birthday.set.month.july.name" xml:space="preserve">
+        <value>July</value>
+    </data>
+    <data name="birthday.set.month.august.name" xml:space="preserve">
+        <value>August</value>
+    </data>
+    <data name="birthday.set.month.september.name" xml:space="preserve">
+        <value>September</value>
+    </data>
+    <data name="birthday.set.month.october.name" xml:space="preserve">
+        <value>October</value>
+    </data>
+    <data name="birthday.set.month.november.name" xml:space="preserve">
+        <value>November</value>
+    </data>
+    <data name="birthday.set.month.december.name" xml:space="preserve">
+        <value>December</value>
+    </data>
+    <data name="birthday.set.day.description" xml:space="preserve">
+        <value>The day of your birthday</value>
+    </data>
+    <data name="birthday.set.month.description" xml:space="preserve">
+        <value>The month of your birthday</value>
+    </data>
 </root>

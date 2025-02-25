@@ -5,11 +5,14 @@ using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Kimi.Commands;
-using Kimi.Commands.Configuration;
+using Kimi.Configuration;
+using Kimi.Jobs;
+using Kimi.Modules.Birthday;
 using Kimi.Modules.Ranking;
 using Kimi.Repository;
 using Kimi.Repository.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 using Serilog;
 
 namespace Kimi;
@@ -47,6 +50,7 @@ public class Program
             options.UseSqlite(builder.Configuration["ConnectionStrings:Database"]));
 
         builder.Services.AddScoped<GuildRepository>();
+        builder.Services.AddScoped<ProfileRepository>();
         builder.Services.AddScoped<UserRepository>();
 
         builder.Services.AddSingleton(discordConfig);
@@ -59,10 +63,16 @@ public class Program
         builder.Services.AddSingleton<InteractionHandler>();
 
         builder.Services.AddScoped<RankingService>();
+        builder.Services.AddSingleton<LevelService>();
+        builder.Services.AddSingleton<BirthdayService>();
 
         builder.Services.AddSingleton<DiscordService>();
 
+        builder.Services.AddSingleton<JobService>();
+        builder.Services.AddQuartz();
+
         builder.Services.AddHostedService<Worker>();
+        builder.Services.AddQuartzHostedService(x => x.WaitForJobsToComplete = true);
 
         var host = builder.Build();
         host.Run();

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi", "src\Kimi\Kimi.cspro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi.Repository", "src\Kimi.Repository\Kimi.Repository.csproj", "{F70DFDA2-7680-44B4-8CA1-D675302F377E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi.Jobs", "src\Kimi.Jobs\Kimi.Jobs.csproj", "{7CA861E7-A586-4E0C-B4A8-DB0E624E74D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{F70DFDA2-7680-44B4-8CA1-D675302F377E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F70DFDA2-7680-44B4-8CA1-D675302F377E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F70DFDA2-7680-44B4-8CA1-D675302F377E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CA861E7-A586-4E0C-B4A8-DB0E624E74D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CA861E7-A586-4E0C-B4A8-DB0E624E74D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CA861E7-A586-4E0C-B4A8-DB0E624E74D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CA861E7-A586-4E0C-B4A8-DB0E624E74D6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
