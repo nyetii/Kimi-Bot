@@ -16,6 +16,15 @@ public class GuildRepository
         _dbContext = dbContext;
     }
 
+    public async Task<Guild> GetAsync(ulong guildId)
+    {
+        return await _dbContext.Guilds
+            .Include(x => x.GuildUsers)
+            .ThenInclude(x => x.User)
+            .Include(x => x.DailyScores)
+            .FirstOrDefaultAsync() ?? throw new Exception("Guild not found.");
+    }
+
     public async Task<Guild> GetOrCreateAsync(GuildDto guildDto)
     {
         var guild = await _dbContext.Guilds.FindAsync(guildDto.Id);

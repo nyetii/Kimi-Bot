@@ -1,5 +1,7 @@
-﻿using Discord;
+﻿using System.Numerics;
+using Discord;
 using Discord.Interactions;
+using Kimi.Extensions;
 using Kimi.Repository.Dtos;
 using Kimi.Repository.Repositories;
 
@@ -19,6 +21,8 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     #region Commands
+
+    #region Top
 
     [SlashCommand("top", "Lists the top 10 users by score")]
     public async Task RankingTopCommand(
@@ -44,7 +48,7 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         await FollowupAsync(embed: result.Embed, components: result.Component, ephemeral: ephemeral);
-        
+
         if (result.Component is not null)
             await DisableButtonsAsync(result.Component);
     }
@@ -83,7 +87,7 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         await FollowupAsync(embed: result.Embed, components: result.Component, ephemeral: ephemeral);
-        
+
         if (result.Component is not null)
             await DisableButtonsAsync(result.Component);
     }
@@ -116,7 +120,7 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
     private async Task DisableButtonsAsync(MessageComponent messageComponent)
     {
         await Task.Delay(TimeSpan.FromMinutes(5));
-        
+
         var componentBuilder = new ComponentBuilder();
         foreach (var component in messageComponent.Components)
         {
@@ -125,18 +129,107 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
             {
                 row.AddComponent(button.ToBuilder().WithDisabled(true).Build());
             }
+
             componentBuilder.AddRow(row);
         }
-        
-        await ModifyOriginalResponseAsync(x =>
-        {
-            x.Components = componentBuilder.Build();
-        });
+
+        await ModifyOriginalResponseAsync(x => { x.Components = componentBuilder.Build(); });
     }
 
     #endregion
 
+    #region Info
+
+    [SlashCommand("info", "Gets interesting info of the server's ranking")]
+    public async Task RankingInfoCommand(bool ephemeral = false)
+    {
+        await DeferAsync(ephemeral);
+
+        var guild = await _guildRepository.GetAsync(Context.Guild.Id);
+
+        var startDate = guild.DailyScores.Min(x => x.Date);
+
+        var totalScore = guild.DailyScores.Sum(x => x.Score);
+        var totalMessages = guild.DailyScores.Sum(x => x.MessageCount);
+
+        var dailyScoresByUser = guild.DailyScores
+            .GroupBy(x => x.UserId)
+            .Select(x => new
+            {
+                Score = x.Sum(ds => ds.Score),
+                MessageCount = x.Sum(ds => ds.MessageCount)
+            })
+            .ToList();
+
+        var medianScore = dailyScoresByUser
+            .OrderBy(x => x.Score)
+            .Skip((dailyScoresByUser.Count - 1) / 2)
+            .Take(2 - dailyScoresByUser.Count % 2)
+            .Average(x => x.Score);
+
+        var medianMessageCount = dailyScoresByUser
+            .OrderBy(x => x.MessageCount)
+            .Skip((dailyScoresByUser.Count - 1) / 2)
+            .Take(2 - dailyScoresByUser.Count % 2)
+            .Average(x => x.MessageCount);
+
+        var dayGroups = guild.DailyScores.GroupBy(x => x.Date).ToList();
+
+        var averageDayScore = dayGroups.Average(x => x.Sum(ds => ds.Score));
+        var averageDayMessage = dayGroups.Average(x => x.Sum(ds => ds.MessageCount));
+
+        var yappiestDayScore = dayGroups.OrderByDescending(x => x.Sum(ds => ds.Score)).First();
+        var yappiestDayMessage = dayGroups.OrderByDescending(x => x.Sum(ds => ds.MessageCount)).First();
+
+        var quietestDayScore = dayGroups.OrderBy(x => x.Sum(ds => ds.Score)).First();
+        var quietestDayMessage = dayGroups.OrderBy(x => x.Sum(ds => ds.MessageCount)).First();
+
+        var embedBuilder = new EmbedBuilder();
+
+        embedBuilder
+            .WithColor(243, 197, 199)
+            .WithAuthor("Statistics", Context.Guild.IconUrl)
+            .WithTitle(Context.Guild.Name)
+            .WithDescription(
+                $"- The server median score is **{medianScore:N0}** and the median message count is **{medianMessageCount:N0}**\n"
+                + $"- Ranking started on {startDate.ToDiscordTimestamp('D')}");
+        
+        embedBuilder.AddField("Average", FormatStatString(averageDayScore, averageDayMessage));
+
+        var yappiestScoreTimestamp = yappiestDayScore.Key.ToDiscordTimestamp();
+        var yappiestMessageTimestamp = yappiestDayMessage.Key.ToDiscordTimestamp();
+
+        embedBuilder.AddField("Yappiest",
+            FormatStatString(yappiestDayScore.Sum(x => x.Score), yappiestDayMessage.Sum(x => x.MessageCount),
+                yappiestScoreTimestamp, yappiestMessageTimestamp));
+
+        var quietestScoreTimestamp = quietestDayScore.Key.ToDiscordTimestamp();
+        var quietestMessageTimestamp = quietestDayMessage.Key.ToDiscordTimestamp();
+
+        embedBuilder.AddField("Quietest",
+            FormatStatString(quietestDayScore.Sum(x => x.Score), quietestDayMessage.Sum(x => x.MessageCount),
+                quietestScoreTimestamp, quietestMessageTimestamp));
+
+        embedBuilder.AddField("Totals", FormatStatString(totalScore, totalMessages));
+
+        embedBuilder
+            .WithThumbnailUrl("https://cdn.discordapp.com/emojis/1308935597380997151.webp?size=96")
+            .WithFooter("Stats valid for when the command was called",
+                "https://cdn.discordapp.com/emojis/783328274193448981.webp?size=96")
+            .WithCurrentTimestamp();
+
+        var embed = embedBuilder.Build();
+
+        await FollowupAsync(embed: embed, ephemeral: ephemeral);
+    }
+
+    #endregion
+
+    #endregion
+
     #region Handling
+
+    #region Top Handling
 
     private async Task<(Embed? Embed, MessageComponent? Component)> HandleLeaderboardAsync(int page, OrderType order,
         PeriodDto? period)
@@ -308,6 +401,25 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
             }
         };
     }
+
+    #endregion
+
+    #region Info Handling
+
+    private string FormatStatString<TNumber>(TNumber scoreStat, TNumber messageStat, 
+        string scoreStr = "", string messageStr = "") where TNumber : INumber<TNumber>
+    {
+        if (!string.IsNullOrWhiteSpace(scoreStr))
+            scoreStr = $"({scoreStr})";
+
+        if (!string.IsNullOrWhiteSpace(messageStr))
+            messageStr = $"({messageStr})";
+
+        return $"**SCORE\u2002\u2002\u2002\u2002** \u27a1 `{scoreStat:N0}` {scoreStr}\n"
+               + $"**MESSAGES** \u27a1 `{messageStat:N0}` {messageStr}";
+    }
+
+    #endregion
 
     #endregion
 

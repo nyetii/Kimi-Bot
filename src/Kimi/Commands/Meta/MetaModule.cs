@@ -17,8 +17,9 @@ public class MetaModule : ModuleBase<SocketCommandContext>
     private readonly KimiConfiguration _configuration;
     private readonly JobService _jobService;
     private readonly Worker _worker;
-    
-    public MetaModule(InteractionService interaction, IOptions<KimiConfiguration> options, JobService jobService, Worker worker)
+
+    public MetaModule(InteractionService interaction, IOptions<KimiConfiguration> options, JobService jobService,
+        Worker worker)
     {
         _interaction = interaction;
         _jobService = jobService;
@@ -29,6 +30,35 @@ public class MetaModule : ModuleBase<SocketCommandContext>
     [Command("ping")]
     public async Task Ping() => await ReplyAsync($"Pong! {Context.Client.Latency}ms");
 
+    [RequireOwner]
+    [Command("react")]
+    public async Task React(ulong messageId, [Remainder] string emoteStr)
+    {
+        var message = await Context.Channel.GetMessageAsync(messageId);
+
+        if (message is null)
+        {
+            await ReplyAsync("Invalid message ID.");
+            return;
+        }
+        
+        if (Emote.TryParse(emoteStr, out var emote))
+        {
+            await message.AddReactionAsync(emote);
+            return;
+        }
+
+        if (Emoji.TryParse(emoteStr, out var emoji))
+        {
+            await message.AddReactionAsync(emoji);
+            return;
+        }
+        
+        await ReplyAsync($"{emoteStr} is not a valid emote.");
+        
+    }
+
+    [RequireOwner]
     [Command("force-trigger")]
     public async Task ForceTrigger([Remainder] string jobName)
     {
@@ -51,7 +81,7 @@ public class MetaModule : ModuleBase<SocketCommandContext>
         await ReplyAsync("Shutting down...");
         await _worker.StopAsync(CancellationToken.None);
     }
-    
+
     [RequireOwner]
     [Command("fetch-roles")]
     public async Task FetchRoles(string? topRole = null, string? bottomRole = null)
@@ -67,11 +97,13 @@ public class MetaModule : ModuleBase<SocketCommandContext>
         embedBuilder.WithColor(243, 197, 199);
         embedBuilder.WithAuthor("Embed to make it pretty!");
         embedBuilder.WithTitle("Fetched Roles");
-        embedBuilder.WithThumbnailUrl("https://cdn.discordapp.com/attachments/354786508550569994/1343786350285033472/ezgif-67a72d80be1893.gif?ex=67be8a10&is=67bd3890&hm=813bd852d29227b94fdd85ccdd2b5c97c50db8b2bd1936cea0c9f2cf1bb9fba9&");
+        embedBuilder.WithThumbnailUrl(
+            "https://cdn.discordapp.com/attachments/354786508550569994/1343786350285033472/ezgif-67a72d80be1893.gif?ex=67be8a10&is=67bd3890&hm=813bd852d29227b94fdd85ccdd2b5c97c50db8b2bd1936cea0c9f2cf1bb9fba9&");
         foreach (var role in roles)
         {
             embedBuilder.AddField(role.Name, $"[Icon]({role.GetIconUrl()}) - {role.Color.ToString().ToUpper()}");
         }
+
         embedBuilder.WithFooter("<3", Context.User.GetAvatarUrl());
         embedBuilder.WithCurrentTimestamp();
 

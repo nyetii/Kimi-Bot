@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using Discord;
@@ -7,6 +8,7 @@ using Discord.WebSocket;
 using Kimi.Commands;
 using Kimi.Configuration;
 using Kimi.Jobs;
+using Kimi.Jobs.Configuration;
 using Kimi.Modules.Birthday;
 using Kimi.Modules.Ranking;
 using Kimi.Repository;
@@ -28,12 +30,17 @@ public class Program
             .CreateLogger();
 
         builder.Services.Configure<KimiConfiguration>(builder.Configuration.GetSection("Kimi"));
-
+        builder.Services.Configure<JobConfiguration>(builder.Configuration.GetSection("Jobs"));
+        
         var discordConfig = new DiscordSocketConfig
         {
             AlwaysDownloadUsers = true,
             MessageCacheSize = 100,
+            #if DEBUG
+            GatewayIntents = GatewayIntents.All
+            #else
             GatewayIntents = (GatewayIntents)53542591
+            #endif
         };
 
         var interactionConfig = new InteractionServiceConfig
@@ -63,7 +70,7 @@ public class Program
         builder.Services.AddSingleton<InteractionHandler>();
 
         builder.Services.AddScoped<RankingService>();
-        builder.Services.AddSingleton<LevelService>();
+        builder.Services.AddScoped<LevelService>();
         builder.Services.AddSingleton<BirthdayService>();
 
         builder.Services.AddSingleton<DiscordService>();
@@ -72,6 +79,7 @@ public class Program
         builder.Services.AddQuartz();
 
         builder.Services.AddSingleton<Worker>();
+        builder.Services.AddWindowsService(x => x.ServiceName = "Kimi");
         builder.Services.AddHostedService(x => x.GetRequiredService<Worker>());
         builder.Services.AddQuartzHostedService(x => x.WaitForJobsToComplete = true);
 

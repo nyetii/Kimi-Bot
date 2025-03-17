@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 
 namespace Kimi.Repository.Dtos;
 
@@ -14,7 +15,7 @@ public record MessageDto
     
     public ulong? ChannelId { get; init; }
 
-    public MessageDto(SocketUserMessage message)
+    public MessageDto(IMessage message)
     {
         Id = message.Id;
         Message = message.Content;
@@ -22,7 +23,7 @@ public record MessageDto
         DateTime = message.Timestamp.UtcDateTime;
         
         AuthorId = message.Author.Id;
-        Author = message.Author is SocketGuildUser guildUser ? new AuthorDto(guildUser) : null;
+        Author = message.Author is IGuildUser guildUser ? new AuthorDto(guildUser) : null;
         
         ChannelId = message.Channel.Id;
     }

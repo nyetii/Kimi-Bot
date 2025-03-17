@@ -23,7 +23,7 @@ public class UserRepository
         return await _dbContext.Database.BeginTransactionAsync();
     }
 
-    public async Task<User> GetOrCreateAsync(AuthorDto 
+    public async Task<User> GetOrCreateAsync(AuthorDto
         author)
     {
         if (author is null)
@@ -173,7 +173,7 @@ public class UserRepository
             _logger.LogInformation("[{guild}] Updated nickname: {old} -> {new}", discordUser.Guild.Name,
                 guildUser.Nickname, discordUser.Nickname);
             guildUser.Nickname = discordUser.Nickname;
-            
+
             _dbContext.GuildUsers.Update(guildUser);
         }
 

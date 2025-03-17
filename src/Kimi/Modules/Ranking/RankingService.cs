@@ -36,6 +36,8 @@ public class RankingService
     {
         _logger.LogInformation("Initializing Ranking Service");
         _client.GuildMemberUpdated += OnUserUpdated;
+        _client.ReactionAdded += OnReactionAdded;
+        _client.ReactionRemoved += OnReactionRemoved;
         _client.MessageReceived += OnMessageReceived;
         _client.MessageDeleted += OnMessageDeleted;
 
@@ -46,7 +48,73 @@ public class RankingService
     {
         try
         {
-            await _userRepository.UpdateNamesAsync(updated);
+            if (old.Value.Nickname != updated.Nickname
+                || old.Value.Username != updated.Username)
+                await _userRepository.UpdateNamesAsync(updated);
+        }
+        catch (Exception ex)
+        {
+            await _client.SendToLogChannelAsync(_configuration.LogChannel, ex);
+            throw;
+        }
+    }
+
+    private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> messageCache,
+        Cacheable<IMessageChannel, ulong> channelCache, SocketReaction socketReaction)
+    {
+        try
+        {
+            if (messageCache.Value is not IMessage message)
+            {
+                var channel = (IMessageChannel)await _client.GetChannelAsync(channelCache.Id);
+                message = await channel.GetMessageAsync(messageCache.Id);
+            }
+
+            if (socketReaction.Emote.Name is not "⭐")
+                return;
+
+            var messageDto = new MessageDto(message);
+
+            if (messageDto.Author is null)
+                throw new Exception("Author is null.");
+
+            var reaction = message.Reactions
+                .FirstOrDefault(x => x.Key.Name is "⭐");
+
+            await _userRepository.GetOrCreateAsync(messageDto.Author);
+            await _userRepository.IncrementScoreAsync(messageDto, (uint)Math.Pow(reaction.Value.ReactionCount, 2));
+        }
+        catch (Exception ex)
+        {
+            await _client.SendToLogChannelAsync(_configuration.LogChannel, ex);
+            throw;
+        }
+    }
+
+    private async Task OnReactionRemoved(Cacheable<IUserMessage, ulong> messageCache,
+        Cacheable<IMessageChannel, ulong> channelCache, SocketReaction socketReaction)
+    {
+        try
+        {
+            if (messageCache.Value is not IMessage message)
+            {
+                var channel = (IMessageChannel)await _client.GetChannelAsync(channelCache.Id);
+                message = await channel.GetMessageAsync(messageCache.Id);
+            }
+
+            if (socketReaction.Emote.Name is not "⭐")
+                return;
+            
+            var messageDto = new MessageDto(message);
+
+            if (messageDto.Author is null)
+                throw new Exception("Author is null.");
+
+            var reaction = message.Reactions
+                .FirstOrDefault(x => x.Key.Name is "⭐");
+            
+            await _userRepository.GetOrCreateAsync(messageDto.Author);
+            await _userRepository.DecrementScoreAsync(messageDto, (uint)Math.Pow(reaction.Value.ReactionCount + 1, 2));
         }
         catch (Exception ex)
         {
@@ -76,7 +144,7 @@ public class RankingService
             var messageDto = new MessageDto(message);
             if (messageDto.Author is null)
                 throw new Exception("Author is null");
-            
+
             _logger.LogDebug("Score before deduction {score}", score);
             var user = await _userRepository.GetOrCreateAsync(messageDto.Author);
 
