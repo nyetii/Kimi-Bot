@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="ranking.top.description" xml:space="preserve">
+        <value>Lista o top 10 membros por pontuação</value>
+    </data>
+    <data name="ranking.top.page.name" xml:space="preserve">
+        <value>pagina</value>
+    </data>
+    <data name="ranking.top.page.description" xml:space="preserve">
+        <value>Seleciona a página - ex. página 3 para a 21ª à 30ª posição</value>
+    </data>
+    <data name="ranking.top.ephemeral.description" xml:space="preserve">
+        <value>A resposta somente será exibida para você</value>
+    </data>
+    <data name="ranking.top.order-by.name" xml:space="preserve">
+        <value>ordem</value>
+    </data>
+    <data name="ranking.top.order-by.description" xml:space="preserve">
+        <value>Seleciona qual ordem deve mostrar (pontos ou mensagens)</value>
+    </data>
+    <data name="ranking.top.period.name" xml:space="preserve">
+        <value>periodo</value>
+    </data>
+    <data name="ranking.top.period.description" xml:space="preserve">
+        <value>Seleciona um período de tempo</value>
+    </data>
+    <data name="ranking.top.period.daily.name" xml:space="preserve">
+        <value>Dia</value>
+    </data>
+    <data name="ranking.top.period.weekly.name" xml:space="preserve">
+        <value>Semana</value>
+    </data>
+    <data name="ranking.top.period.monthly.name" xml:space="preserve">
+        <value>Mês</value>
+    </data>
+    <data name="ranking.top.period.yearly.name" xml:space="preserve">
+        <value>Ano</value>
+    </data>
+    <data name="ranking.top.period.all-time.name" xml:space="preserve">
+        <value>Sempre</value>
+    </data>
+    <data name="ranking.top.period.ytd.name" xml:space="preserve">
+        <value>Ano até agora</value>
+    </data>
+    <data name="ranking.top.order-by.score.name" xml:space="preserve">
+        <value>Pontuação</value>
+    </data>
+    <data name="ranking.top.order-by.message-count.name" xml:space="preserve">
+        <value>Total de mensagens</value>
+    </data>
+    <data name="ranking.top-period.order-by.description" xml:space="preserve">
+        <value>Seleciona qual ordem deve mostrar (pontos ou mensagens)</value>
+    </data>
+    <data name="ranking.top-period.order-by.message-count.name" xml:space="preserve">
+        <value>Total de mensagens</value>
+    </data>
+    <data name="ranking.top-period.order-by.name" xml:space="preserve">
+        <value>ordem</value>
+    </data>
+    <data name="ranking.top-period.order-by.score.name" xml:space="preserve">
+        <value>Pontuação</value>
+    </data>
+    <data name="ranking.top-period.name" xml:space="preserve">
+        <value>top-periodo</value>
+    </data>
+    <data name="ranking.top-period.description" xml:space="preserve">
+        <value>Lista o top 10 de membros por pontuação durante certo período.</value>
+    </data>
+    <data name="ranking.top-period.page.name" xml:space="preserve">
+        <value>pagina</value>
+    </data>
+    <data name="ranking.top-period.page.description" xml:space="preserve">
+        <value>Seleciona a página - ex. página 3 para a 21ª à 30ª posição</value>
+    </data>
+    <data name="ranking.top-period.ephemeral.description" xml:space="preserve">
+        <value>A resposta somente será exibida para você</value>
+    </data>
+    <data name="ranking.top-period.start-date.name" xml:space="preserve">
+        <value>data-inicial</value>
+    </data>
+    <data name="ranking.top-period.end-date.name" xml:space="preserve">
+        <value>data-final</value>
+    </data>
+    <data name="ranking.top-period.start-date.description" xml:space="preserve">
+        <value>A data inicial. Formatação: dd/mm/yyyy OU yyyy/mm/dd</value>
+    </data>
+    <data name="ranking.top-period.end-date.description" xml:space="preserve">
+        <value>A data final. Se nenhuma data for providenciada, o dia de hoje será considerado</value>
+    </data>
+    <data name="birthday.set.name" xml:space="preserve">
+        <value>adicionar</value>
+    </data>
+    <data name="birthday.name" xml:space="preserve">
+        <value>aniversario</value>
+    </data>
+    <data name="birthday.description" xml:space="preserve">
+        <value>Aniversário!!!</value>
+    </data>
+    <data name="birthday.set.description" xml:space="preserve">
+        <value>Seleciona a data do seu aniversário para você ganhar um cargo especial no dia</value>
+    </data>
+    <data name="birthday.remove.name" xml:space="preserve">
+        <value>remover</value>
+    </data>
+    <data name="birthday.remove.description" xml:space="preserve">
+        <value>Remove a data do seu aniversário do banco de dados</value>
+    </data>
+    <data name="birthday.set.day.name" xml:space="preserve">
+        <value>dia</value>
+    </data>
+    <data name="birthday.set.month.name" xml:space="preserve">
+        <value>mes</value>
+    </data>
+    <data name="birthday.set.month.january.name" xml:space="preserve">
+        <value>Janeiro</value>
+    </data>
+    <data name="birthday.set.month.april.name" xml:space="preserve">
+        <value>Abril</value>
+    </data>
+    <data name="birthday.set.month.august.name" xml:space="preserve">
+        <value>Agosto</value>
+    </data>
+    <data name="birthday.set.month.december.name" xml:space="preserve">
+        <value>Dezembro</value>
+    </data>
+    <data name="birthday.set.month.february.name" xml:space="preserve">
+        <value>Fevereiro</value>
+    </data>
+    <data name="birthday.set.month.july.name" xml:space="preserve">
+        <value>Julho</value>
+    </data>
+    <data name="birthday.set.month.march.name" xml:space="preserve">
+        <value>Março</value>
+    </data>
+    <data name="birthday.set.month.june.name" xml:space="preserve">
+        <value>Junho</value>
+    </data>
+    <data name="birthday.set.month.may.name" xml:space="preserve">
+        <value>Maio</value>
+    </data>
+    <data name="birthday.set.month.november.name" xml:space="preserve">
+        <value>Novembro</value>
+    </data>
+    <data name="birthday.set.month.october.name" xml:space="preserve">
+        <value>Outubro</value>
+    </data>
+    <data name="birthday.set.month.september.name" xml:space="preserve">
+        <value>Setembro</value>
+    </data>
+    <data name="birthday.set.day.description" xml:space="preserve">
+        <value>O dia do seu aniversário</value>
+    </data>
+    <data name="birthday.set.month.description" xml:space="preserve">
+        <value>O mês do seu aniversário</value>
+    </data>
+</root>

@@ -1,0 +1,5 @@
+﻿<Project>
+    <!-- To use dotnet ef without 'msbuildprojectextensionspath' -->
+    <Import Condition="Exists('$(MSBuildProjectDirectory)\obj\$(MSBuildProjectFile).EntityFrameworkCore.targets')"
+            Project="$(MSBuildProjectDirectory)\obj\$(MSBuildProjectFile).EntityFrameworkCore.targets"/>
+</Project>
