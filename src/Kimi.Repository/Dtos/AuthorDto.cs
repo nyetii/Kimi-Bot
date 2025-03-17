@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using Kimi.Repository.Models;
 
 namespace Kimi.Repository.Dtos;
@@ -12,7 +13,7 @@ public record AuthorDto
     public ulong? GuildId { get; init; }
     public GuildDto? Guild { get; init; }
 
-    public AuthorDto(SocketGuildUser user)
+    public AuthorDto(IGuildUser user)
     {
         Id = user.Id;
         Username = user.Username;

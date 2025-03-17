@@ -61,4 +61,14 @@ public static class DiscordExtensions
         
         await client.SendToLogChannelAsync(channelId, strBuilder.ToString());
     }
+
+    public static long ToUnixTimeSeconds(this DateOnly date)
+    {
+        return new DateTimeOffset(date, new TimeOnly(), TimeSpan.Zero).ToUnixTimeSeconds();
+    }
+
+    public static string ToDiscordTimestamp(this DateOnly date, char type = 'R')
+    {
+        return $"<t:{date.ToUnixTimeSeconds()}:{type}>";
+    }
 }
