@@ -69,6 +69,9 @@ public class RankingService
                 var channel = (IMessageChannel)await _client.GetChannelAsync(channelCache.Id);
                 message = await channel.GetMessageAsync(messageCache.Id);
             }
+            
+            if(message.Author.IsBot)
+                return;
 
             if (socketReaction.Emote.Name is not "⭐")
                 return;
@@ -81,7 +84,7 @@ public class RankingService
             var reaction = message.Reactions
                 .FirstOrDefault(x => x.Key.Name is "⭐");
 
-            await _userRepository.GetOrCreateAsync(messageDto.Author);
+            await _userRepository.GetOrCreateAsync(messageDto.Author, false);
             await _userRepository.IncrementScoreAsync(messageDto, (uint)Math.Pow(reaction.Value.ReactionCount, 2));
         }
         catch (Exception ex)
@@ -101,6 +104,9 @@ public class RankingService
                 var channel = (IMessageChannel)await _client.GetChannelAsync(channelCache.Id);
                 message = await channel.GetMessageAsync(messageCache.Id);
             }
+            
+            if(message.Author.IsBot)
+                return;
 
             if (socketReaction.Emote.Name is not "⭐")
                 return;
@@ -113,7 +119,7 @@ public class RankingService
             var reaction = message.Reactions
                 .FirstOrDefault(x => x.Key.Name is "⭐");
             
-            await _userRepository.GetOrCreateAsync(messageDto.Author);
+            await _userRepository.GetOrCreateAsync(messageDto.Author, false);
             await _userRepository.DecrementScoreAsync(messageDto, (uint)Math.Pow(reaction.Value.ReactionCount + 1, 2));
         }
         catch (Exception ex)
@@ -146,7 +152,7 @@ public class RankingService
                 throw new Exception("Author is null");
 
             _logger.LogDebug("Score before deduction {score}", score);
-            var user = await _userRepository.GetOrCreateAsync(messageDto.Author);
+            var user = await _userRepository.GetOrCreateAsync(messageDto.Author, false);
 
             var guildUser = user.GetGuildUserInfo(channel.Guild.Id);
             score = RetractTextSpamScore(guildUser, messageDto, score);
@@ -224,7 +230,7 @@ public class RankingService
         }
 
         if ((message.Flags & MessageFlags.VoiceMessage) != 0)
-            return 10;
+            return (uint)Math.Clamp(message.Attachments.Sum(x => x.WaveformBytes.Sum(b => b)) / 1000, 0, 5);
 
         if (RankingRegex.RepetitionMatch().IsMatch(message.CleanContent))
         {

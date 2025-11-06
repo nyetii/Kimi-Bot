@@ -49,7 +49,8 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         [SlashCommand("set", "Updates Kimi status")]
-        public async Task UpdateStatus(string? message, string? url = null, ActivityType? activity = ActivityType.CustomStatus, UserStatus? userStatus = UserStatus.Online,
+        public async Task UpdateStatus(string? message, string? url = null,
+            ActivityType? activity = ActivityType.CustomStatus, UserStatus? userStatus = UserStatus.Online,
             bool @default = false, bool persist = true, bool ephemeral = true)
         {
             await DeferAsync(ephemeral);
@@ -245,10 +246,39 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
+    [Group("account", "Commands about account")]
+    public class AccountModule : InteractionModuleBase<SocketInteractionContext>
+    {
+        private readonly UserRepository _userRepository;
+
+        public AccountModule(IServiceProvider serviceProvider)
+        {
+            _userRepository = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<UserRepository>();
+        }
+
+        [SlashCommand("link", "Links two user accounts")]
+        public async Task LinkAccounts(IUser mainUser, IUser user)
+        {
+            await DeferAsync();
+            try
+            {
+                var transaction = await _userRepository.BeginTransactionAsync();
+                await _userRepository.LinkUsersAsync(mainUser.Id, user.Id);
+                await _userRepository.CommitAsync(transaction);
+                await FollowupAsync($"Linked {user.Username} to the main account {mainUser.Username} successfully.");
+            }
+            catch (Exception ex)
+            {
+                await FollowupAsync($"Could not link users. {ex.Message}");
+                throw;
+            }
+        }
+    }
+
     [SlashCommand("talk", "Send a message as Kimi.")]
     public async Task Talk(string message, IChannel? channel = null, string reply = "0", bool ephemeral = true)
     {
-        await DeferAsync(true);
+        await DeferAsync(ephemeral);
 
         channel ??= Context.Channel;
 

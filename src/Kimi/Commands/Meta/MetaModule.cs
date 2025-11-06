@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO.Compression;
+using System.Text;
 using Discord;
 using Discord.Commands;
 using Kimi.Configuration;
@@ -41,7 +42,7 @@ public class MetaModule : ModuleBase<SocketCommandContext>
             await ReplyAsync("Invalid message ID.");
             return;
         }
-        
+
         if (Emote.TryParse(emoteStr, out var emote))
         {
             await message.AddReactionAsync(emote);
@@ -53,9 +54,8 @@ public class MetaModule : ModuleBase<SocketCommandContext>
             await message.AddReactionAsync(emoji);
             return;
         }
-        
+
         await ReplyAsync($"{emoteStr} is not a valid emote.");
-        
     }
 
     [RequireOwner]
@@ -129,6 +129,85 @@ public class MetaModule : ModuleBase<SocketCommandContext>
         await _interaction.AddModulesToGuildAsync(Context.Guild.Id, true, modules);
 
         await ReplyAsync("Refreshed modules.");
+    }
+
+    [RequireOwner]
+    [Command("fetch-avatars")]
+    public async Task FetchAvatars()
+    {
+        var originalMessage = await ReplyAsync("Fetching avatars...");
+
+        try
+        {
+            var httpClient = new HttpClient();
+            var users = Context.Guild.Users.ToList();
+
+            await using var stream = new MemoryStream();
+
+            var zip = new ZipArchive(stream, ZipArchiveMode.Create, true);
+
+            foreach (var user in users)
+            {
+                var url = user.GetAvatarUrl();
+
+                var success = true;
+                await using var avatarStream = await TryGetAvatar();
+
+                var extension = url.Split("?")[0].Split('.').Last();
+
+                var entry = zip.CreateEntry($"{user.Username}_{user.Discriminator}.{(success ? extension : "txt")}");
+
+                await using var openEntry = entry.Open();
+                await avatarStream.CopyToAsync(openEntry);
+
+                continue;
+
+                async Task<Stream> TryGetAvatar()
+                {
+                    HttpResponseMessage? lastResponse = null;
+                    for (var i = 0; i < 3; i++)
+                    {
+                        lastResponse = await httpClient.GetAsync(url);
+                        if (lastResponse.IsSuccessStatusCode)
+                            return await lastResponse.Content.ReadAsStreamAsync();
+
+                        await Task.Delay(5000);
+                    }
+
+                    success = false;
+                    var bleh = new MemoryStream();
+                    var streamWriter = new StreamWriter(bleh);
+                    await streamWriter.WriteAsync(lastResponse?.ReasonPhrase ?? "something went wrong lol");
+                    await streamWriter.FlushAsync();
+                    streamWriter.BaseStream.Position = 0;
+                    return streamWriter.BaseStream;
+                }
+            }
+            
+            zip.Dispose();
+            stream.Position = 0;
+
+            if (stream.Length > 8388608)
+            {
+                await using var fileStream = new FileStream(
+                        $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/avatars_{Context.Guild.Name.Replace(' ', '-')}.zip",
+                        FileMode.CreateNew);
+                await stream.CopyToAsync(fileStream);
+                await fileStream.FlushAsync();
+                await ReplyAsync("check your desktop 🌿🌿");
+            }
+            else
+                await Context.Channel.SendFileAsync(new FileAttachment(stream,
+                    $"avatars_{Context.Guild.Name.Replace(' ', '-')}.zip"), "here are them all!!! 💖");
+        }
+        catch
+        {
+            await ReplyAsync("IM SO SORRY I COULD NOT DO WHAT U ASKED AAAAA 😭😭😭");
+        }
+        finally
+        {
+            await originalMessage.DeleteAsync();
+        }
     }
 
     [Command("modules")]

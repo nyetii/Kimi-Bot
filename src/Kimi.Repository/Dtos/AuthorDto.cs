@@ -17,7 +17,7 @@ public record AuthorDto
     {
         Id = user.Id;
         Username = user.Username;
-        Nickname = user.Nickname;
+        Nickname = string.IsNullOrWhiteSpace(user.Nickname) ? user.DisplayName : user.Nickname;
         
         GuildId = user.Guild.Id;
         Guild = new GuildDto(user.Guild);

@@ -24,14 +24,12 @@ public class UserRepository
     }
 
     public async Task<User> GetOrCreateAsync(AuthorDto
-        author)
+        author, bool searchForMain = true)
     {
         if (author is null)
             throw new Exception("Author is null.");
-
-        var user = await _dbContext.Users
-            .Include(x => x.GuildUsers)
-            .FirstOrDefaultAsync(x => x.Id == author.Id);
+        
+        var user = await FindUserAsync(author.Id, searchForMain);
 
         if (user is not null)
             return user;
@@ -62,11 +60,13 @@ public class UserRepository
         if (message.Author is not { Guild: not null })
             throw new Exception("Author is null.");
 
+        var user = await FindUserAsync(message.Author.Id) ?? throw new Exception("User is null.");
+
         var daily = await _dbContext.DailyScores
             .Include(x => x.Guild)
             .Include(x => x.User)
             .ThenInclude(x => x.GuildUsers)
-            .Where(x => x.UserId == message.Author.Id
+            .Where(x => x.UserId == user.Id
                         && x.GuildId == message.Author.Guild.Id)
             .FirstOrDefaultAsync(x => x.Date == DateOnly.FromDateTime(DateTime.UtcNow));
 
@@ -103,17 +103,21 @@ public class UserRepository
         if (message.Author is not { Guild: not null })
             throw new Exception("Author is null.");
 
+        var user = await FindUserAsync(message.Author.Id) ?? throw new Exception("User is null.");
+
         var daily = await _dbContext.DailyScores
             .Include(x => x.Guild)
             .Include(x => x.User)
             .ThenInclude(x => x.GuildUsers)
-            .Where(x => x.UserId == message.Author.Id
+            .Where(x => x.UserId == user.Id
                         && x.GuildId == message.Author.Guild.Id)
             .FirstOrDefaultAsync(x => x.Date == DateOnly.FromDateTime(message.DateTime));
 
         if (daily is not null)
         {
-            daily.Score -= score;
+            daily.Score = daily.Score > score
+                ? daily.Score - score
+                : 0;
             daily.MessageCount--;
             _dbContext.DailyScores.Update(daily);
             _logger.LogInformation("[{guild}] Removed {score} points from {username} [Daily Total {total}]",
@@ -135,9 +139,7 @@ public class UserRepository
         if (message.Author is not { Guild: not null } userDto)
             throw new Exception("Author is null.");
 
-        var user = await _dbContext.Users
-            .Include(x => x.GuildUsers)
-            .FirstOrDefaultAsync(x => x.Id == userDto.Id) ?? throw new Exception("User is null.");
+        var user = await FindUserAsync(userDto.Id) ?? throw new Exception("User is null.");
 
         var userInfo = user.GetGuildUserInfo(userDto.Guild.Id);
         userInfo.LastMessage = message.DateTime;
@@ -152,9 +154,7 @@ public class UserRepository
 
     public async Task UpdateNamesAsync(SocketGuildUser discordUser)
     {
-        var user = await _dbContext.Users
-            .Include(x => x.GuildUsers)
-            .FirstOrDefaultAsync(x => x.Id == discordUser.Id);
+        var user = await FindUserAsync(discordUser.Id);
 
         if (user is null)
             return;
@@ -172,7 +172,9 @@ public class UserRepository
         {
             _logger.LogInformation("[{guild}] Updated nickname: {old} -> {new}", discordUser.Guild.Name,
                 guildUser.Nickname, discordUser.Nickname);
-            guildUser.Nickname = discordUser.Nickname;
+            guildUser.Nickname = string.IsNullOrWhiteSpace(discordUser.Nickname)
+                ? discordUser.DisplayName
+                : discordUser.Nickname;
 
             _dbContext.GuildUsers.Update(guildUser);
         }
@@ -187,7 +189,8 @@ public class UserRepository
                 TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time")));
 
         return await _dbContext.Users
-            .Where(x => x.Birthday != null
+            .Where(x => !x.Hidden
+                        && x.Birthday != null
                         && x.Birthday.Value.Month == date.Month
                         && x.Birthday.Value.Day == date.Day)
             .AsNoTracking()
@@ -198,7 +201,7 @@ public class UserRepository
 
     public async Task UpdateBirthdateAsync(ulong userId, DateTime? dateTime = null)
     {
-        var user = await _dbContext.Users.FindAsync(userId) ?? throw new Exception("User not found.");
+        var user = await FindUserAsync(userId) ?? throw new Exception("User not found.");
 
         if (user.Birthday is not null && dateTime is not null)
             throw new Exception("Birthdate is already set.");
@@ -212,6 +215,81 @@ public class UserRepository
         _dbContext.Users.Update(user);
         await _dbContext.SaveChangesAsync();
     }
+
+    public void AsMainUser(ref User user)
+    {
+        var id = user.MainUserId;
+
+        if (id.HasValue)
+            user = user.MainUser ?? throw new Exception("Main user is null. Has it been included in the query?");
+    }
+
+    public async Task<User?> FindUserAsync(ulong userId, bool searchForMain = true)
+    {
+        var user = await _dbContext.Users
+            .Include(x => x.GuildUsers)
+            .Include(x => x.MainUser)
+            .ThenInclude(x => x!.GuildUsers)
+            .FirstOrDefaultAsync(x => x.Id == userId);
+
+        if (user is null)
+            return null;
+
+        if (user.MainUserId.HasValue && searchForMain)
+            user = user.MainUser ?? throw new Exception("Main user is null, even though an Id is set.");
+
+        return user;
+    }
+
+    public async Task LinkUsersAsync(ulong mainUserId, ulong secondaryUserId)
+    {
+        var mainUser = await _dbContext.Users
+            .Include(x => x.GuildUsers)
+            .FirstOrDefaultAsync(x => x.Id == mainUserId);
+
+        var secondaryUser = await _dbContext.Users
+            .Include(x => x.GuildUsers)
+            .FirstOrDefaultAsync(x => x.Id == secondaryUserId);
+
+        if (mainUser is null || secondaryUser is null)
+            throw new Exception("Could not find user to link.");
+
+        mainUser.MainUserId = null;
+
+        secondaryUser.MainUserId = mainUserId;
+        secondaryUser.MainUser = mainUser;
+
+        _dbContext.Users.UpdateRange(mainUser, secondaryUser);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    // public async Task SyncUserAsync(ulong userId)
+    // {
+    //     var mainUser = await _dbContext.Users
+    //         .Include(x => x.GuildUsers)
+    //         .Include(x => x.DailyScores)
+    //         .Include(x => x.MainUser)
+    //         .FirstOrDefaultAsync(x => x.Id == userId);
+    //
+    //     if (mainUser is null)
+    //         throw new Exception("Could not find user.");
+    //
+    //     if (mainUser.MainUserId.HasValue)
+    //         mainUser = mainUser.MainUser ?? throw new Exception("Main user is null, even though an Id is set.");
+    //
+    //     var secondaryUsers = await _dbContext.Users
+    //         .Include(x => x.GuildUsers)
+    //         .Include(x => x.DailyScores)
+    //         .Where(x => x.MainUserId == userId)
+    //         .ToListAsync();
+    //
+    //     var secondaryScores = secondaryUsers.SelectMany(x => x.DailyScores).GroupBy(x => x.Date);
+    //
+    //     foreach (var score in mainUser.DailyScores)
+    //     {
+    //         score.Score = 
+    //     }
+    // }
 
     public async Task CommitAsync(IDbContextTransaction transaction)
     {

@@ -173,7 +173,9 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
             .Take(2 - dailyScoresByUser.Count % 2)
             .Average(x => x.MessageCount);
 
-        var dayGroups = guild.DailyScores.GroupBy(x => x.Date).ToList();
+        var dayGroups = guild.DailyScores
+            .Where(x => x.Date != DateOnly.FromDateTime(DateTime.UtcNow))
+            .GroupBy(x => x.Date).ToList();
 
         var averageDayScore = dayGroups.Average(x => x.Sum(ds => ds.Score));
         var averageDayMessage = dayGroups.Average(x => x.Sum(ds => ds.MessageCount));
@@ -193,7 +195,7 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
             .WithDescription(
                 $"- The server median score is **{medianScore:N0}** and the median message count is **{medianMessageCount:N0}**\n"
                 + $"- Ranking started on {startDate.ToDiscordTimestamp('D')}");
-        
+
         embedBuilder.AddField("Average", FormatStatString(averageDayScore, averageDayMessage));
 
         var yappiestScoreTimestamp = yappiestDayScore.Key.ToDiscordTimestamp();
@@ -406,7 +408,7 @@ public class RankingModule : InteractionModuleBase<SocketInteractionContext>
 
     #region Info Handling
 
-    private string FormatStatString<TNumber>(TNumber scoreStat, TNumber messageStat, 
+    private string FormatStatString<TNumber>(TNumber scoreStat, TNumber messageStat,
         string scoreStr = "", string messageStr = "") where TNumber : INumber<TNumber>
     {
         if (!string.IsNullOrWhiteSpace(scoreStr))

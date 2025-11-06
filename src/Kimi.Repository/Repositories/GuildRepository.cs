@@ -22,7 +22,8 @@ public class GuildRepository
             .Include(x => x.GuildUsers)
             .ThenInclude(x => x.User)
             .Include(x => x.DailyScores)
-            .FirstOrDefaultAsync() ?? throw new Exception("Guild not found.");
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(x => x.Id == guildId) ?? throw new Exception("Guild not found.");
     }
 
     public async Task<Guild> GetOrCreateAsync(GuildDto guildDto)
@@ -48,18 +49,15 @@ public class GuildRepository
         var guild = await _dbContext.Guilds
                         .Include(x => x.GuildUsers)
                         .ThenInclude(x => x.User)
-                        .Include(x => x.DailyScores)
+                        .ThenInclude(x => x.DailyScores)
                         .AsSplitQuery()
                         .AsNoTracking()
                         .FirstOrDefaultAsync(x => x.Id == guildId)
                     ?? throw new Exception("Guild not found.");
 
-        var dailyScoresByUser = guild.GuildUsers.Select(x => new
-        {
-            Id = x.UserId,
-            Nickname = x.Nickname ?? x.User.Username,
-            DailyScores = guild.DailyScores.Where(ds => ds.UserId == x.UserId)
-        });
+        var dailyScoresByUser = guild.GuildUsers
+            .GroupBy(x => x.User.MainUserId ?? x.UserId)
+            .Select(FlattenScores);
 
         var totalDailyScoresByUser = new List<UserScoreDto>();
 
@@ -79,7 +77,7 @@ public class GuildRepository
         var guild = await _dbContext.Guilds
                         .Include(x => x.GuildUsers)
                         .ThenInclude(x => x.User)
-                        .Include(x => x.DailyScores
+                        .ThenInclude(x => x.DailyScores
                             .Where(ds =>
                                 ds.Date >= DateOnly.FromDateTime(period.Start)
                                 && ds.Date <= DateOnly.FromDateTime(period.End)))
@@ -88,12 +86,9 @@ public class GuildRepository
                         .FirstOrDefaultAsync(x => x.Id == guildId)
                     ?? throw new Exception("Guild not found.");
 
-        var dailyScoresByUser = guild.GuildUsers.Select(x => new
-        {
-            Id = x.UserId,
-            Nickname = x.Nickname ?? x.User.Username,
-            DailyScores = guild.DailyScores.Where(ds => ds.UserId == x.UserId)
-        });
+        var dailyScoresByUser = guild.GuildUsers
+            .GroupBy(x => x.User.MainUserId ?? x.UserId)
+            .Select(FlattenScores);
 
         var totalDailyScoresByUser = new List<UserScoreDto>();
 
@@ -117,6 +112,15 @@ public class GuildRepository
             .AsSplitQuery()
             .ToDictionaryAsync(x => x, x => x.DailyScores
                 .ToArray());
+    }
+
+    private (ulong Id, string Nickname, IEnumerable<DailyScore> DailyScores) FlattenScores(
+        IGrouping<ulong, GuildUser> group)
+    {
+        var mainUser = group.FirstOrDefault(x => x.UserId == group.Key) ?? throw new Exception("fuck?");
+        var nickname = mainUser.Nickname ?? mainUser.User.Username;
+        var scores = group.SelectMany(x => x.User.DailyScores);
+        return (group.Key, nickname, scores);
     }
 
     public async Task<bool> SaveAsync()

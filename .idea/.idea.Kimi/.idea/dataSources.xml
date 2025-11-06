@@ -9,5 +9,12 @@
       <jdbc-url>jdbc:sqlite:C:\Users\Netty\Desktop\Repos\Kimi-Bot\src\Kimi\Kimi.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="Kimi.db [2]" uuid="4c2a27f3-161a-4352-ab9d-3daf1034f97c">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:K:/Releases/Kimi/Kimi.db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

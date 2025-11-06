@@ -48,7 +48,8 @@ public class BirthdayService
                 await AddBirthdayRole(user, roleId);
 
             var usersWithRole = guild.Users
-                .Where(x => !userIds.Contains(x.Id) && x.Roles.Any(role => role.Id == roleId));
+                .Where(x => x.Id is 182246084117135360
+                            || (!userIds.Contains(x.Id) && x.Roles.Any(role => role.Id == roleId)));
 
             foreach (var user in usersWithRole)
                 await RemoveBirthdayRole(user, roleId);

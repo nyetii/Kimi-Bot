@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Discord.WebSocket;
 
 namespace Kimi.Repository.Models;
@@ -12,9 +13,14 @@ public class User
     public ICollection<Guild> Guilds { get; init; } = [];
     public ICollection<GuildUser> GuildUsers { get; init; } = [];
     public ICollection<DailyScore> DailyScores { get; init; } = [];
+    
+    public ulong? MainUserId { get; set; }
+    public User? MainUser { get; set; }
+    
+    public bool Hidden { get; set; }
 
     public GuildUser GetGuildUserInfo(ulong guildId)
-        => GuildUsers.FirstOrDefault(x => x.GuildId == guildId) 
+        => GuildUsers.FirstOrDefault(x => x.GuildId == guildId)
            ?? throw new Exception($"Could not get info for {Username} [{Id}] on Guild with ID {guildId}");
 
     public static User ToEntity(SocketUserMessage message)

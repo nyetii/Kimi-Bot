@@ -57,6 +57,7 @@ public class CommandHandler
                 CommandError.BadArgCount => "Invalid arguments.",
                 CommandError.ObjectNotFound => "Arguments could not be interpreted.",
                 CommandError.MultipleMatches => "There are multiple matches.",
+                CommandError.UnmetPrecondition when result.ErrorReason is "Command can only be run by the owner of the bot." => "ONLY MY CREATOR NICKY CAN RUN THIS COMMAND 🥺🌿",
                 CommandError.UnmetPrecondition => $"Unmet precondition: {result.ErrorReason}",
                 CommandError.Exception => $"Exception: {result.ErrorReason}",
                 _ => "Command could not be executed."
