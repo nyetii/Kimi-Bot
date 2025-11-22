@@ -8,8 +8,6 @@ services:
 
     volumes:
       - kimi-data:/app/data
-      - var:/var
-      - tmp:/tmp
 
     environment:
       ConnectionStrings__Default: "Data Source=/app/data/Kimi.db"
