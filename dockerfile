@@ -10,9 +10,6 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-COPY . .
-COPY config/appsettings.json /app/appsettings.json
-
 RUN mkdir -p /app/kimi/data
 
 ENV ConnectionStrings__Default="Data Source=/app/kimi/data/Kimi.db"

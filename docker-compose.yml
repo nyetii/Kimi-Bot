@@ -15,7 +15,8 @@ services:
 
 volumes:
   kimi-data:
-    type: none
-    device: /app/kimi/data
-    o: bind
+    driver_opts:
+      type: none
+      device: /app/kimi/data
+      o: bind
   config:
