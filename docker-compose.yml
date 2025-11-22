@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   worker:
-    image: ghcr.io/nyetii/Kimi-Bot/kimi:latest
+    image: ghcr.io/nyetii/kimi:latest
     container_name: kimi
     restart: always
 
