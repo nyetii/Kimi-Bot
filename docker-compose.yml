@@ -10,7 +10,7 @@ services:
       - kimi-data:/app/data
 
     environment:
-      ConnectionStrings__Default: "Data Source=/app/data/kimi.db"
+      ConnectionStrings__Default: "Data Source=/app/data/Kimi.db"
 
 volumes:
   worker-data:

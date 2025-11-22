@@ -12,6 +12,6 @@ COPY --from=build /app/publish .
 
 RUN mkdir -p /app/data
 
-ENV ConnectionStrings__Default="Data Source=/app/data/kimi.db"
+ENV ConnectionStrings__Default="Data Source=/app/data/Kimi.db"
 
 ENTRYPOINT ["dotnet", "Kimi.dll"]
