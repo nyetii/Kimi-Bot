@@ -28,7 +28,7 @@ public class UserRepository
     {
         if (author is null)
             throw new Exception("Author is null.");
-        
+
         var user = await FindUserAsync(author.Id, searchForMain);
 
         if (user is not null)
@@ -60,42 +60,21 @@ public class UserRepository
         if (message.Author is not { Guild: not null })
             throw new Exception("Author is null.");
 
-        var user = await FindUserAsync(message.Author.Id) ?? throw new Exception("User is null.");
+        // SQLite UPSERT to handle concurrency atomically
+        var date = DateOnly.FromDateTime(DateTime.UtcNow);
 
-        var daily = await _dbContext.DailyScores
-            .Include(x => x.Guild)
-            .Include(x => x.User)
-            .ThenInclude(x => x.GuildUsers)
-            .Where(x => x.UserId == user.Id
-                        && x.GuildId == message.Author.Guild.Id)
-            .FirstOrDefaultAsync(x => x.Date == DateOnly.FromDateTime(DateTime.UtcNow));
-
-        if (daily is not null)
-        {
-            daily.Score += score;
-            daily.MessageCount++;
-            _dbContext.DailyScores.Update(daily);
-            _logger.LogInformation("[{guild}] Added {score} points to {username} [Daily Total {total}]",
-                message.Author.Guild.Name, score, daily.User.Username,
-                daily.Score);
-
-            await _dbContext.SaveChangesAsync();
-            return;
-        }
-
-        daily = new DailyScore
-        {
-            Date = DateOnly.FromDateTime(DateTime.UtcNow),
-            Score = score,
-            MessageCount = 1,
-            GuildId = message.Author.Guild.Id,
-            UserId = message.Author.Id
-        };
-        await _dbContext.DailyScores.AddAsync(daily);
+        await _dbContext.Database.ExecuteSqlInterpolatedAsync($"""
+                                                               
+                                                                       INSERT INTO DailyScores (UserId, GuildId, Date, Score, MessageCount)
+                                                                       VALUES ({message.Author.Id}, {message.Author.Guild.Id}, {date}, {score}, 1)
+                                                                       ON CONFLICT(UserId, GuildId, Date)
+                                                                       DO UPDATE SET
+                                                                           Score = Score + {score},
+                                                                           MessageCount = MessageCount + 1;
+                                                                   
+                                                               """);
         _logger.LogInformation("[{guild}] Created today's score stats for {username}", message.Author.Guild.Name,
             message.Author.Username);
-
-        await _dbContext.SaveChangesAsync();
     }
 
     public async Task DecrementScoreAsync(MessageDto message, uint score)
