@@ -7,10 +7,10 @@ services:
     restart: always
 
     volumes:
-      - kimi-data:/app/data
+      - kimi-data:/app/kimi/data
 
     environment:
-      ConnectionStrings__Default: "Data Source=/app/data/Kimi.db"
+      ConnectionStrings__Default: "Data Source=/app/kimi/data/Kimi.db"
 
 volumes:
-  worker-data:
+  kimi-data:
