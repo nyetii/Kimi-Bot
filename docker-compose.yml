@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  worker:
+    image: ghcr.io/nyetii/Kimi-Bot/kimi:latest
+    container_name: kimi
+    restart: always
+
+    volumes:
+      - kimi-data:/app/data
+
+    environment:
+      ConnectionStrings__Default: "Data Source=/app/data/kimi.db"
+
+volumes:
+  worker-data:
