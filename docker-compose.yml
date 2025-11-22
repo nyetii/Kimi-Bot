@@ -8,6 +8,7 @@ services:
 
     volumes:
       - kimi-data:/app/data
+      - var:/var
       - tmp:/tmp
 
     environment:
