@@ -1,5 +1,5 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+WORKDIR /kimi
 
 COPY . .
 
@@ -10,7 +10,10 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-RUN mkdir -p /app/data/kimi
+COPY . .
+COPY config/appsettings.json /app/appsettings.json
+
+RUN mkdir -p /app/kimi/data
 
 ENV ConnectionStrings__Default="Data Source=/app/kimi/data/Kimi.db"
 

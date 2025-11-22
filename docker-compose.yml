@@ -8,9 +8,14 @@ services:
 
     volumes:
       - kimi-data:/app/kimi/data
+      - config:/app/kimi/config
 
     environment:
       ConnectionStrings__Default: "Data Source=/app/kimi/data/Kimi.db"
 
 volumes:
   kimi-data:
+    type: none
+    device: /app/kimi/data
+    o: bind
+  config:
